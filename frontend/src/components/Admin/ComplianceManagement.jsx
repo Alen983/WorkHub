@@ -17,9 +17,23 @@ import {
   TableHead,
   TableRow,
   Skeleton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import api from '../../services/api';
 import { format } from 'date-fns';
+
+const DEPARTMENT_OPTIONS = [
+  { value: 'All', label: 'All (company-wide)' },
+  { value: 'Engineering', label: 'Engineering' },
+  { value: 'HR', label: 'HR' },
+  { value: 'Sales', label: 'Sales' },
+];
 
 const ComplianceManagement = () => {
   const [open, setOpen] = useState(false);
@@ -77,6 +91,17 @@ const ComplianceManagement = () => {
     }
   };
 
+  const handleDelete = async (policyId, title) => {
+    if (!window.confirm(`Delete policy "${title}"? This cannot be undone.`)) return;
+    try {
+      await api.delete(`/admin/compliance/${policyId}`);
+      loadPolicies();
+    } catch (err) {
+      console.error('Failed to delete policy:', err);
+      alert(err.response?.data?.detail || 'Failed to delete policy');
+    }
+  };
+
   return (
     <Box>
       <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
@@ -101,6 +126,7 @@ const ComplianceManagement = () => {
                 <TableCell sx={{ fontWeight: 600 }}>Department</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Due Date</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+                <TableCell sx={{ fontWeight: 600 }} align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -110,6 +136,18 @@ const ComplianceManagement = () => {
                   <TableCell>{p.department}</TableCell>
                   <TableCell>{p.due_date ? format(new Date(p.due_date), 'MMM d, yyyy') : '—'}</TableCell>
                   <TableCell>{p.description || '—'}</TableCell>
+                  <TableCell align="right">
+                    <Tooltip title="Delete policy">
+                      <IconButton
+                        size="small"
+                        color="error"
+                        aria-label="Delete policy"
+                        onClick={() => handleDelete(p.id, p.title)}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -129,14 +167,22 @@ const ComplianceManagement = () => {
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             required
           />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Department"
-            value={formData.department}
-            onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-            required
-          />
+          <FormControl fullWidth margin="normal" required>
+            <InputLabel id="compliance-department-label">Department</InputLabel>
+            <Select
+              labelId="compliance-department-label"
+              id="compliance-department"
+              value={formData.department}
+              label="Department"
+              onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+            >
+              {DEPARTMENT_OPTIONS.map((opt) => (
+                <MenuItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <TextField
             fullWidth
             margin="normal"

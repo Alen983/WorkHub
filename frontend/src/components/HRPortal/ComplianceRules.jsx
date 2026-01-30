@@ -16,96 +16,9 @@ import {
   Skeleton,
 } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import FolderIcon from '@mui/icons-material/Folder';
 import api from '../../services/api';
 import { format } from 'date-fns';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
-import LockIcon from '@mui/icons-material/Lock';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-
-const COMPLIANCE_CATEGORIES = [
-  {
-    id: 'hr',
-    title: 'HR Compliance',
-    ruleCount: 12,
-    icon: FolderIcon,
-    rules: [
-      'Employees must follow company working hours and attendance guidelines',
-      'Biometric/ESS attendance manipulation is strictly prohibited',
-      'All leave requests must be submitted through the ESS portal',
-      'Discrimination based on gender, caste, religion, race, or background is prohibited',
-      'Workplace harassment of any form is a zero-tolerance offense',
-      'Employee personal data must be kept confidential',
-      'Official documents must not be shared externally without HR approval',
-      'Code of conduct must be followed in office and remote work',
-      'Performance reviews should be fair and data-driven',
-      'Any conflict of interest must be disclosed',
-      'Resignation notice period policy must be respected',
-      'Company assets must be returned on exit',
-    ],
-  },
-  {
-    id: 'ai',
-    title: 'Responsible AI Policy',
-    ruleCount: 12,
-    icon: SmartToyIcon,
-    rules: [
-      'AI systems must not be used to discriminate or bias decisions',
-      'Employee data used for AI must be anonymized where possible',
-      'No sensitive data allowed in public AI tools (ChatGPT, etc.)',
-      'AI outputs must be reviewed by humans before decisions',
-      'Training data must follow data privacy regulations',
-      'AI models must be explainable where required',
-      'Unauthorized AI tools are not permitted',
-      'Regular audits of AI systems are mandatory',
-      'AI must comply with company ethics guidelines',
-      'Employees must be trained on AI responsible usage',
-      'Data used in AI must have documented consent',
-      'Security controls must protect AI pipelines',
-    ],
-  },
-  {
-    id: 'it',
-    title: 'IT Security Policy',
-    ruleCount: 13,
-    icon: LockIcon,
-    rules: [
-      'Strong passwords with periodic changes are mandatory',
-      'Two-factor authentication must be enabled',
-      'Company systems must not be used for illegal activities',
-      'Software installations require IT approval',
-      'USB and external drives are restricted',
-      'Company email is for official use only',
-      'Confidential data must be encrypted',
-      'Devices must be locked when unattended',
-      'Phishing awareness training is mandatory',
-      'VPN must be used for remote access',
-      'System vulnerabilities must be reported immediately',
-      'Data backups are performed regularly',
-      'Unauthorized access attempts will lead to disciplinary action',
-    ],
-  },
-  {
-    id: 'finance',
-    title: 'Financial Conduct Policy',
-    ruleCount: 12,
-    icon: AccountBalanceIcon,
-    rules: [
-      'Expense claims must have valid receipts',
-      'False expense claims lead to disciplinary action',
-      'Approval hierarchy must be followed',
-      'Company funds must be used only for business purposes',
-      'Budget limits must be respected',
-      'Payroll data is confidential',
-      'Any financial conflict of interest must be disclosed',
-      'Vendor payments require authorized approval',
-      'Fraud or misuse must be reported immediately',
-      'Tax compliance must be followed strictly',
-      'Financial records must be accurately maintained',
-      'Audits must be fully supported',
-    ],
-  },
-];
+import { COMPLIANCE_CATEGORIES } from '../../utils/complianceRules';
 
 const ComplianceRules = () => {
   const [categoryFilter, setCategoryFilter] = useState('all');

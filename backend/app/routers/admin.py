@@ -107,6 +107,23 @@ def create_compliance_policy(
     return new_policy
 
 
+@router.delete("/compliance/{policy_id}")
+def delete_compliance_policy(
+    policy_id: int,
+    current_user: User = Depends(require_role("hr")),
+    db: Session = Depends(get_db)
+):
+    policy = db.query(CompliancePolicy).filter(CompliancePolicy.id == policy_id).first()
+    if not policy:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Policy not found"
+        )
+    db.delete(policy)
+    db.commit()
+    return {"message": "Policy deleted successfully"}
+
+
 @router.post("/learning", response_model=LearningContentResponse)
 def create_learning_content(
     content_data: LearningContentCreate,

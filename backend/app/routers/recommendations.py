@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy import or_, func
 from app.database import get_db
 from app.models import User, LearningContent, CompliancePolicy
 from app.schemas import (
@@ -10,6 +11,7 @@ from app.schemas import (
     LearningPathStep,
 )
 from app.dependencies import get_current_user
+from app.config import settings
 from datetime import date
 import json
 
@@ -51,9 +53,12 @@ def get_recommendations(
     
     all_learning = db.query(LearningContent).all()
     all_compliance = db.query(CompliancePolicy).filter(
-        CompliancePolicy.department == current_user.department
+        or_(
+            func.lower(CompliancePolicy.department) == current_user.department.lower(),
+            CompliancePolicy.department.ilike("all"),
+        )
     ).all()
-    
+
     recommended_learning = []
     explanations = []
     
@@ -140,18 +145,42 @@ def get_recommendations(
                 f"'{content.title}' is relevant for your role."
             )
     
-    compliance_list = []
+    compliance_list = list(all_compliance)
+    compliance_list.sort(key=lambda x: x.due_date)
     today = date.today()
     for policy in all_compliance:
         if policy.due_date >= today:
-            compliance_list.append(policy)
             explanations.append(
                 f"Compliance policy '{policy.title}' is due on {policy.due_date.strftime('%Y-%m-%d')}. "
                 f"Please ensure completion."
             )
-    
-    compliance_list.sort(key=lambda x: x.due_date)
-    
+
+    if settings.api_key and settings.api_key.strip():
+        try:
+            from openai import OpenAI
+            client = OpenAI(api_key=settings.api_key.strip())
+            learning_titles = [c.title for c in top_learning[:5]]
+            compliance_titles = [p.title for p in compliance_list[:2]]
+            goals_str = ", ".join(career_goals[:3]) if career_goals else "none specified"
+            prompt = (
+                f"The user is a {current_user.role} in {current_user.department}. "
+                f"Their career goals: {goals_str}. "
+                f"Recommended learning: {', '.join(learning_titles) or 'none'}. "
+                f"Relevant compliance: {', '.join(compliance_titles) or 'none'}. "
+                f"Write one or two short sentences explaining why these recommendations fit this user. Be concise."
+            )
+            completion = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=150,
+            )
+            if completion.choices and completion.choices[0].message.content:
+                ai_summary = completion.choices[0].message.content.strip()
+                if ai_summary:
+                    explanations.insert(0, ai_summary)
+        except Exception:
+            pass
+
     def tags_list(c):
         if isinstance(c.tags, list):
             return c.tags
@@ -174,7 +203,7 @@ def get_recommendations(
                 department=p.department,
                 due_date=p.due_date,
                 description=p.description
-            ) for p in compliance_list[:5]
+            ) for p in compliance_list
         ],
         explanations=explanations[:5],
         skill_gaps=skill_gaps,
@@ -195,16 +224,15 @@ def get_team_compliance(
         )
     
     all_compliance = db.query(CompliancePolicy).filter(
-        CompliancePolicy.department == current_user.department
+        or_(
+            func.lower(CompliancePolicy.department) == current_user.department.lower(),
+            CompliancePolicy.department.ilike("all"),
+        )
     ).all()
-    
-    compliance_list = []
-    today = date.today()
-    for policy in all_compliance:
-        compliance_list.append(policy)
-    
+
+    compliance_list = list(all_compliance)
     compliance_list.sort(key=lambda x: x.due_date)
-    
+
     return RecommendationResponse(
         learning_content=[],
         compliance_policies=[
