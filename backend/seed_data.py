@@ -1,9 +1,43 @@
 from app.database import SessionLocal, engine
-from app.models import Base, User, DashboardConfig, CompliancePolicy, LearningContent
+from app.models import Base, User, UserDocument, DashboardConfig, CompliancePolicy, LearningContent
 from app.auth import get_password_hash
 import json
 
 Base.metadata.create_all(bind=engine)
+
+# Add new User columns if missing (for existing DBs)
+with engine.connect() as conn:
+    try:
+        r = conn.execute(__import__("sqlalchemy").text("PRAGMA table_info(users)"))
+        cols = [row[1] for row in r.fetchall()]
+    except Exception:
+        cols = []
+    for col, spec in [
+        ("phone", "TEXT"),
+        ("address", "TEXT"),
+        ("manager_id", "INTEGER"),
+        ("interests", "TEXT"),
+        ("certifications", "TEXT"),
+        ("career_preferences", "TEXT"),
+    ]:
+        if col not in cols:
+            try:
+                conn.execute(__import__("sqlalchemy").text(f"ALTER TABLE users ADD COLUMN {col} {spec}"))
+                conn.commit()
+            except Exception:
+                conn.rollback()
+    try:
+        r = conn.execute(__import__("sqlalchemy").text("PRAGMA table_info(dashboard_configs)"))
+        dcols = [row[1] for row in r.fetchall()]
+    except Exception:
+        dcols = []
+    for col in ["show_profile", "show_attendance", "show_payroll", "show_career", "show_wellness"]:
+        if col not in dcols:
+            try:
+                conn.execute(__import__("sqlalchemy").text(f"ALTER TABLE dashboard_configs ADD COLUMN {col} INTEGER DEFAULT 1"))
+                conn.commit()
+            except Exception:
+                conn.rollback()
 
 db = SessionLocal()
 
@@ -15,7 +49,12 @@ try:
             "password": "password123",
             "role": "employee",
             "department": "Engineering",
-            "skills": ["Python", "React", "Docker"]
+            "skills": ["Python", "React", "Docker"],
+            "phone": "+1-555-0101",
+            "address": "123 Tech Park, Engineering Wing",
+            "interests": ["AI", "Web Development"],
+            "certifications": [{"title": "AWS Certified", "issuer": "Amazon", "date": "2024-01", "expiry": None}],
+            "career_preferences": {"goals": ["Tech Lead"], "preferred_roles": ["Senior Developer"], "work_prefs": "Hybrid"},
         },
         {
             "name": "Jane Manager",
@@ -23,7 +62,9 @@ try:
             "password": "password123",
             "role": "manager",
             "department": "Engineering",
-            "skills": ["Leadership", "Project Management"]
+            "skills": ["Leadership", "Project Management"],
+            "phone": "+1-555-0102",
+            "address": "123 Tech Park, Management",
         },
         {
             "name": "Admin HR",
@@ -31,7 +72,7 @@ try:
             "password": "password123",
             "role": "hr",
             "department": "HR",
-            "skills": ["HR Management", "Compliance"]
+            "skills": ["HR Management", "Compliance"],
         },
         {
             "name": "Bob Developer",
@@ -39,7 +80,9 @@ try:
             "password": "password123",
             "role": "employee",
             "department": "Engineering",
-            "skills": ["JavaScript", "Node.js"]
+            "skills": ["JavaScript", "Node.js"],
+            "interests": ["Backend", "APIs"],
+            "career_preferences": {"goals": ["Architect"], "work_prefs": "Remote"},
         },
         {
             "name": "Alice Sales",
@@ -47,19 +90,25 @@ try:
             "password": "password123",
             "role": "employee",
             "department": "Sales",
-            "skills": ["Sales", "Communication"]
+            "skills": ["Sales", "Communication"],
         }
     ]
     
+    manager_ids = {}
     for user_data in users_data:
         existing = db.query(User).filter(User.email == user_data["email"]).first()
         if existing:
-            # Update existing user with new password hash
             existing.password_hash = get_password_hash(user_data["password"])
             existing.name = user_data["name"]
             existing.role = user_data["role"]
             existing.department = user_data["department"]
             existing.skills = json.dumps(user_data["skills"])
+            if hasattr(existing, "phone"):
+                existing.phone = user_data.get("phone")
+                existing.address = user_data.get("address")
+                existing.interests = json.dumps(user_data.get("interests", []))
+                existing.certifications = json.dumps(user_data.get("certifications", []))
+                existing.career_preferences = json.dumps(user_data.get("career_preferences", {}))
             db.commit()
             user = existing
         else:
@@ -69,22 +118,41 @@ try:
                 password_hash=get_password_hash(user_data["password"]),
                 role=user_data["role"],
                 department=user_data["department"],
-                skills=json.dumps(user_data["skills"])
+                skills=json.dumps(user_data["skills"]),
+                phone=user_data.get("phone"),
+                address=user_data.get("address"),
+                interests=json.dumps(user_data.get("interests", [])),
+                certifications=json.dumps(user_data.get("certifications", [])),
+                career_preferences=json.dumps(user_data.get("career_preferences", {})),
             )
             db.add(user)
             db.commit()
             db.refresh(user)
-        
-        # Ensure dashboard config exists
+        if user.role == "manager":
+            manager_ids[user.department] = user.id
         config = db.query(DashboardConfig).filter(DashboardConfig.user_id == user.id).first()
         if not config:
             config = DashboardConfig(
                 user_id=user.id,
                 show_leaves=True,
                 show_learning=True,
-                show_compliance=True
+                show_compliance=True,
+                show_profile=True,
+                show_attendance=True,
+                show_payroll=True,
+                show_career=True,
+                show_wellness=True,
             )
             db.add(config)
+            db.commit()
+    for user_data in users_data:
+        if user_data["role"] != "employee":
+            continue
+        u = db.query(User).filter(User.email == user_data["email"]).first()
+        if u and hasattr(u, "manager_id"):
+            mid = manager_ids.get(u.department)
+            if mid:
+                u.manager_id = mid
             db.commit()
     
     compliance_policies = [

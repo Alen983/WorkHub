@@ -16,6 +16,11 @@ def get_recommendations(
     db: Session = Depends(get_db)
 ):
     user_skills = json.loads(current_user.skills) if current_user.skills else []
+    user_interests = json.loads(getattr(current_user, "interests", None) or "[]")
+    user_certs = json.loads(getattr(current_user, "certifications", None) or "[]")
+    user_prefs = json.loads(getattr(current_user, "career_preferences", None) or "{}")
+    career_goals = (user_prefs.get("goals") or []) if isinstance(user_prefs.get("goals"), list) else ([user_prefs.get("goals")] if user_prefs.get("goals") else [])
+    preferred_roles = (user_prefs.get("preferred_roles") or []) if isinstance(user_prefs.get("preferred_roles"), list) else ([user_prefs.get("preferred_roles")] if user_prefs.get("preferred_roles") else [])
     
     all_learning = db.query(LearningContent).all()
     all_compliance = db.query(CompliancePolicy).filter(
@@ -38,6 +43,16 @@ def get_recommendations(
             for tag in content_tags:
                 if skill.lower() in tag.lower():
                     match_score += 3
+        for interest in user_interests:
+            if isinstance(interest, str) and (interest.lower() in content.title.lower() or any(interest.lower() in str(t).lower() for t in content_tags)):
+                match_score += 2
+        for cert in user_certs:
+            if isinstance(cert, dict) and cert.get("title"):
+                if cert["title"].lower() in content.title.lower():
+                    match_score += 1
+        for goal in career_goals:
+            if goal and isinstance(goal, str) and goal.lower() in content.title.lower():
+                match_score += 2
         
         if match_score > 0:
             recommended_learning.append((match_score, content))

@@ -21,16 +21,29 @@ def get_dashboard(
             user_id=current_user.id,
             show_leaves=True,
             show_learning=True,
-            show_compliance=True
+            show_compliance=True,
+            show_profile=True,
+            show_attendance=True,
+            show_payroll=True,
+            show_career=True,
+            show_wellness=True,
         )
         db.add(config)
         db.commit()
         db.refresh(config)
     
+    def get_show(config, key, default=True):
+        return getattr(config, key, default) if config else default
+    
     dashboard_data = DashboardData(config=DashboardConfigResponse(
-        show_leaves=config.show_leaves,
-        show_learning=config.show_learning,
-        show_compliance=config.show_compliance
+        show_leaves=get_show(config, "show_leaves"),
+        show_learning=get_show(config, "show_learning"),
+        show_compliance=get_show(config, "show_compliance"),
+        show_profile=get_show(config, "show_profile"),
+        show_attendance=get_show(config, "show_attendance"),
+        show_payroll=get_show(config, "show_payroll"),
+        show_career=get_show(config, "show_career"),
+        show_wellness=get_show(config, "show_wellness"),
     ))
     
     if current_user.role == "employee":
@@ -96,17 +109,30 @@ def update_dashboard_config(
         config = DashboardConfig(user_id=current_user.id)
         db.add(config)
     
-    if config_update.show_leaves is not None:
-        config.show_leaves = config_update.show_leaves
-    if config_update.show_learning is not None:
-        config.show_learning = config_update.show_learning
-    if config_update.show_compliance is not None:
-        config.show_compliance = config_update.show_compliance
+    def set_if(name):
+        val = getattr(config_update, name, None)
+        if val is not None and hasattr(config, name):
+            setattr(config, name, val)
+    set_if("show_leaves")
+    set_if("show_learning")
+    set_if("show_compliance")
+    set_if("show_profile")
+    set_if("show_attendance")
+    set_if("show_payroll")
+    set_if("show_career")
+    set_if("show_wellness")
     
     db.commit()
     db.refresh(config)
+    def get_show(c, key, default=True):
+        return getattr(c, key, default) if c else default
     return DashboardConfigResponse(
-        show_leaves=config.show_leaves,
-        show_learning=config.show_learning,
-        show_compliance=config.show_compliance
+        show_leaves=get_show(config, "show_leaves"),
+        show_learning=get_show(config, "show_learning"),
+        show_compliance=get_show(config, "show_compliance"),
+        show_profile=get_show(config, "show_profile"),
+        show_attendance=get_show(config, "show_attendance"),
+        show_payroll=get_show(config, "show_payroll"),
+        show_career=get_show(config, "show_career"),
+        show_wellness=get_show(config, "show_wellness"),
     )
