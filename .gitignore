@@ -1,6 +1,9 @@
 # Python
 __pycache__/
 **/__pycache__/
+*.pyc
+*.py[cod]
+*.pyc.*
 *.py[cod]
 *.pyc
 *.pyo
