@@ -1,3 +1,6 @@
+import os
+import json
+from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import timedelta
@@ -9,11 +12,37 @@ from app.config import settings
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+def _debug_log(msg: str, data: dict, hypothesis_id: str = ""):
+    # #region agent log
+    try:
+        log_path = os.environ.get("DEBUG_LOG_PATH") or str(Path(__file__).resolve().parent.parent.parent.parent.parent / ".cursor" / "debug.log")
+        payload = {"message": msg, "data": data, "timestamp": __import__("time").time() * 1000, "sessionId": "debug-session", "hypothesisId": hypothesis_id, "location": "auth.py:login"}
+        with open(log_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(payload) + "\n")
+    except Exception:
+        pass
+    # #endregion
+
 
 @router.post("/login", response_model=Token)
 def login(credentials: LoginRequest, db: Session = Depends(get_db)):
+    # #region agent log
+    _debug_log("login request", {"email": credentials.email, "password_len": len(credentials.password)}, "C")
+    # #endregion
     user = db.query(User).filter(User.email == credentials.email).first()
-    if not user or not verify_password(credentials.password, user.password_hash):
+    # #region agent log
+    _debug_log("user lookup", {"email": credentials.email, "user_found": user is not None, "user_id": getattr(user, "id", None)}, "A")
+    # #endregion
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password"
+        )
+    # #region agent log
+    pwd_ok = verify_password(credentials.password, user.password_hash)
+    _debug_log("password check", {"user_id": user.id, "password_ok": pwd_ok, "hash_prefix": (user.password_hash or "")[:20]}, "B")
+    # #endregion
+    if not pwd_ok:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password"

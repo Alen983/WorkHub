@@ -70,12 +70,17 @@ def get_recommendations(
     
     compliance_list.sort(key=lambda x: x.due_date)
     
+    def tags_list(c):
+        if isinstance(c.tags, list):
+            return c.tags
+        return json.loads(c.tags) if c.tags else []
+
     return RecommendationResponse(
         learning_content=[
             LearningContentResponse(
                 id=c.id,
                 title=c.title,
-                tags=json.loads(c.tags) if c.tags else [],
+                tags=tags_list(c),
                 level=c.level,
                 description=c.description
             ) for c in top_learning

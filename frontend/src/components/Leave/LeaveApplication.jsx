@@ -10,6 +10,7 @@ import {
   Alert
 } from '@mui/material';
 import api from '../../services/api';
+import BackToDashboard from '../common/BackToDashboard';
 
 const LeaveApplication = () => {
   const [fromDate, setFromDate] = useState('');
@@ -57,6 +58,7 @@ const LeaveApplication = () => {
   return (
     <Container maxWidth="sm">
       <Box sx={{ marginTop: 4 }}>
+        <BackToDashboard />
         <Paper elevation={3} sx={{ padding: 4 }}>
           <Typography variant="h5" gutterBottom>
             Apply for Leave

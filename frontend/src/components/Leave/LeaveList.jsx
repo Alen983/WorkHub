@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Container, Typography, Box, Chip, Paper } from '@mui/material';
+import { Container, Typography, Box, Chip, Paper, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { format } from 'date-fns';
+import BackToDashboard from '../common/BackToDashboard';
 
 const LeaveList = () => {
   const [leaves, setLeaves] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadLeaves();
@@ -21,7 +24,16 @@ const LeaveList = () => {
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h5" gutterBottom>
+      <BackToDashboard />
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h5">
+          Leave Management
+        </Typography>
+        <Button variant="contained" onClick={() => navigate('/leave/apply')}>
+          Apply for Leave
+        </Button>
+      </Box>
+      <Typography variant="subtitle1" color="text.secondary" gutterBottom>
         My Leave Requests
       </Typography>
       {leaves.length > 0 ? (

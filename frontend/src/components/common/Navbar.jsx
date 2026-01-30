@@ -18,6 +18,11 @@ const Navbar = () => {
           Employee Portal
         </Typography>
         {user && (
+          <Button color="inherit" onClick={() => navigate('/dashboard')} sx={{ mr: 1 }}>
+            Dashboard
+          </Button>
+        )}
+        {user && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Typography variant="body2">
               {user.name} ({user.role})

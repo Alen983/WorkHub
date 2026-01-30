@@ -1,139 +1,50 @@
-import { useState, useEffect } from 'react';
-import { Container, Grid, Button, Typography, Box, Chip } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Container, Grid, Typography, Box } from '@mui/material';
 import DashboardCard from './DashboardCard';
-import PersonalizationPanel from './PersonalizationPanel';
-import api from '../../services/api';
-import { format } from 'date-fns';
+import PersonIcon from '@mui/icons-material/Person';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import EventIcon from '@mui/icons-material/Event';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import SchoolIcon from '@mui/icons-material/School';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import PolicyIcon from '@mui/icons-material/Policy';
+
+const MODULES = [
+  { title: 'My Profile', description: 'View and update your profile', to: '/profile', icon: PersonIcon },
+  { title: 'Attendance', description: 'View attendance and timesheets', to: '/attendance', icon: ScheduleIcon },
+  { title: 'Leave Management', description: 'Apply and track leave requests', to: '/leave', icon: EventIcon },
+  { title: 'Payroll & Compensation', description: 'Payslips and compensation', to: '/payroll', icon: AttachMoneyIcon },
+  { title: 'Learning & Certifications', description: 'Courses and certifications', to: '/learning', icon: SchoolIcon },
+  { title: 'Career Growth & Development', description: 'Goals and development plans', to: '/career', icon: TrendingUpIcon },
+  { title: 'Wellness & Engagement', description: 'Wellness programs and engagement', to: '/wellness', icon: FavoriteIcon },
+  { title: 'Compliance & Policies', description: 'Policies and compliance tasks', to: '/compliance', icon: PolicyIcon },
+];
 
 const EmployeeDashboard = () => {
-  const [dashboardData, setDashboardData] = useState(null);
-  const [recommendations, setRecommendations] = useState(null);
-  const navigate = useNavigate();
-
+  // #region agent log
   useEffect(() => {
-    loadDashboard();
-    loadRecommendations();
+    fetch('http://127.0.0.1:7243/ingest/c97bdf2a-ba3b-4d68-ac8d-51af73b942ab',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'EmployeeDashboard.jsx',message:'EmployeeDashboard mounted',data:{modulesCount:MODULES.length},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'B'})}).catch(()=>{});
   }, []);
-
-  const loadDashboard = async () => {
-    try {
-      const response = await api.get('/dashboard');
-      setDashboardData(response.data);
-    } catch (error) {
-      console.error('Failed to load dashboard:', error);
-    }
-  };
-
-  const loadRecommendations = async () => {
-    try {
-      const response = await api.get('/recommendations');
-      setRecommendations(response.data);
-    } catch (error) {
-      console.error('Failed to load recommendations:', error);
-    }
-  };
-
-  const handleConfigUpdate = (newConfig) => {
-    setDashboardData((prev) => ({
-      ...prev,
-      config: newConfig,
-    }));
-  };
-
-  if (!dashboardData) {
-    return <div>Loading...</div>;
-  }
-
-  const config = dashboardData.config || {
-    show_leaves: true,
-    show_learning: true,
-    show_compliance: true,
-  };
+  // #endregion
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h4">Employee Dashboard</Typography>
-        <Button variant="contained" onClick={() => navigate('/leave/apply')}>
-          Apply for Leave
-        </Button>
-      </Box>
-
-      <PersonalizationPanel config={config} onUpdate={handleConfigUpdate} />
+      <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
+        Personalized Employee Dashboard
+      </Typography>
 
       <Grid container spacing={3}>
-        {config.show_leaves && (
-          <Grid item xs={12} md={6}>
-            <DashboardCard title="Leave Status">
-              {dashboardData.leave_requests && dashboardData.leave_requests.length > 0 ? (
-                <Box>
-                  {dashboardData.leave_requests.map((leave) => (
-                    <Box key={leave.id} sx={{ mb: 2, p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}>
-                      <Typography variant="body2">
-                        {format(new Date(leave.from_date), 'MMM dd, yyyy')} - {format(new Date(leave.to_date), 'MMM dd, yyyy')}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {leave.reason}
-                      </Typography>
-                      <Chip
-                        label={leave.status}
-                        color={leave.status === 'Approved' ? 'success' : leave.status === 'Rejected' ? 'error' : 'warning'}
-                        size="small"
-                        sx={{ mt: 1 }}
-                      />
-                    </Box>
-                  ))}
-                </Box>
-              ) : (
-                <Typography color="text.secondary">No leave requests</Typography>
-              )}
-            </DashboardCard>
+        {MODULES.map((mod) => (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={mod.to}>
+            <DashboardCard
+              title={mod.title}
+              description={mod.description}
+              to={mod.to}
+              icon={mod.icon}
+            />
           </Grid>
-        )}
-
-        {config.show_learning && recommendations && (
-          <Grid item xs={12} md={6}>
-            <DashboardCard title="Learning Recommendations">
-              {recommendations.learning_content && recommendations.learning_content.length > 0 ? (
-                <Box>
-                  {recommendations.learning_content.slice(0, 3).map((content) => (
-                    <Box key={content.id} sx={{ mb: 2, p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}>
-                      <Typography variant="subtitle2">{content.title}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {content.description}
-                      </Typography>
-                      <Chip label={content.level} size="small" sx={{ mt: 1 }} />
-                    </Box>
-                  ))}
-                </Box>
-              ) : (
-                <Typography color="text.secondary">No recommendations available</Typography>
-              )}
-            </DashboardCard>
-          </Grid>
-        )}
-
-        {config.show_compliance && recommendations && (
-          <Grid item xs={12} md={6}>
-            <DashboardCard title="Compliance Reminders">
-              {recommendations.compliance_policies && recommendations.compliance_policies.length > 0 ? (
-                <Box>
-                  {recommendations.compliance_policies.map((policy) => (
-                    <Box key={policy.id} sx={{ mb: 2, p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}>
-                      <Typography variant="subtitle2">{policy.title}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Due: {format(new Date(policy.due_date), 'MMM dd, yyyy')}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-              ) : (
-                <Typography color="text.secondary">No compliance reminders</Typography>
-              )}
-            </DashboardCard>
-          </Grid>
-        )}
+        ))}
       </Grid>
     </Container>
   );
