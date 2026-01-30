@@ -1,17 +1,17 @@
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
-import DashboardIcon from '@mui/icons-material/Dashboard';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import LogoutIcon from '@mui/icons-material/Logout';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-const Navbar = () => {
+const HRNavbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/hr/login', { replace: true });
   };
 
   return (
@@ -29,31 +29,31 @@ const Navbar = () => {
               justifyContent: 'center',
             }}
           >
-            <DashboardIcon sx={{ fontSize: 22, color: 'white' }} />
+            <AdminPanelSettingsIcon sx={{ fontSize: 22, color: 'white' }} />
           </Box>
           <Typography variant="h6" component="div" fontWeight={700} sx={{ letterSpacing: '-0.02em' }}>
-            WorkHub
+            WorkHub HR
           </Typography>
         </Box>
         {user && (
-          <Button
-            color="inherit"
-            startIcon={<DashboardIcon />}
-            onClick={() => navigate('/dashboard')}
-            sx={{ textTransform: 'none', fontWeight: 500 }}
-          >
-            Dashboard
-          </Button>
-        )}
-        {user && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.5, borderRadius: 1, bgcolor: 'rgba(255,255,255,0.1)' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                px: 1.5,
+                py: 0.5,
+                borderRadius: 1,
+                bgcolor: 'rgba(255,255,255,0.1)',
+              }}
+            >
               <PersonOutlineIcon sx={{ fontSize: 18, opacity: 0.9 }} />
               <Typography variant="body2" sx={{ fontWeight: 500 }}>
                 {user.name}
               </Typography>
               <Typography variant="caption" sx={{ opacity: 0.85 }}>
-                ({user.role})
+                (HR)
               </Typography>
             </Box>
             <Button
@@ -71,4 +71,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default HRNavbar;

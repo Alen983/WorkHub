@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from typing import List
 from app.database import get_db
 from app.models import User, CompliancePolicy, LearningContent, DashboardConfig
 from app.schemas import (
@@ -77,6 +78,15 @@ def delete_user(
     db.delete(user)
     db.commit()
     return {"message": "User deleted successfully"}
+
+
+@router.get("/compliance", response_model=List[CompliancePolicyResponse])
+def list_compliance_policies(
+    current_user: User = Depends(require_role("hr")),
+    db: Session = Depends(get_db)
+):
+    policies = db.query(CompliancePolicy).order_by(CompliancePolicy.due_date).all()
+    return policies
 
 
 @router.post("/compliance", response_model=CompliancePolicyResponse)

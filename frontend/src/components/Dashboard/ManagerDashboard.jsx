@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Container, Typography, Box, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Grid, Tabs, Tab, Checkbox, TextField, InputAdornment } from '@mui/material';
+import { Container, Typography, Box, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Grid, Tabs, Tab, Checkbox, TextField, InputAdornment, Skeleton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import DashboardCard from './DashboardCard';
 import TeamStats from './TeamStats';
@@ -114,7 +114,19 @@ const ManagerDashboard = () => {
   };
 
   if (!dashboardData) {
-    return <div>Loading...</div>;
+    return (
+      <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+        <Typography variant="h4" gutterBottom>Manager Dashboard</Typography>
+        <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+          {[1, 2, 3, 4].map((i) => (
+            <Box key={i} sx={{ width: 200, height: 100 }}>
+              <Skeleton variant="rounded" height={100} sx={{ borderRadius: 2 }} />
+            </Box>
+          ))}
+        </Box>
+        <Skeleton variant="rectangular" height={320} sx={{ borderRadius: 2 }} />
+      </Container>
+    );
   }
 
   const filteredPendingLeaves = dashboardData.pending_leaves?.filter(leave => {
@@ -139,9 +151,14 @@ const ManagerDashboard = () => {
 
   return (
     <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Manager Dashboard
-      </Typography>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h4" fontWeight={700} gutterBottom>
+          Manager Dashboard
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          Team overview and leave approvals
+        </Typography>
+      </Box>
 
       <TeamStats stats={dashboardData.recommendations} />
 
@@ -208,28 +225,28 @@ const ManagerDashboard = () => {
                       </Box>
                     )}
                   </Box>
-                  <TableContainer component={Paper}>
-                    <Table>
+                  <TableContainer component={Paper} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+                    <Table size="small">
                       <TableHead>
-                        <TableRow>
-                          <TableCell padding="checkbox">
+                        <TableRow sx={{ bgcolor: 'action.hover' }}>
+                          <TableCell padding="checkbox" sx={{ fontWeight: 600 }}>
                             <Checkbox
                               checked={selectedLeaves.length === filteredPendingLeaves.length && filteredPendingLeaves.length > 0}
                               indeterminate={selectedLeaves.length > 0 && selectedLeaves.length < filteredPendingLeaves.length}
                               onChange={handleSelectAll}
                             />
                           </TableCell>
-                          <TableCell>Employee</TableCell>
-                          <TableCell>From Date</TableCell>
-                          <TableCell>To Date</TableCell>
-                          <TableCell>Reason</TableCell>
-                          <TableCell>Status</TableCell>
-                          <TableCell>Actions</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Employee</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>From Date</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>To Date</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Reason</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
                         {filteredPendingLeaves.map((leave) => (
-                          <TableRow key={leave.id}>
+                          <TableRow key={leave.id} hover sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
                             <TableCell padding="checkbox">
                               <Checkbox
                                 checked={selectedLeaves.includes(leave.id)}

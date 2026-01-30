@@ -10,6 +10,7 @@ import {
   Checkbox,
   Button,
   Collapse,
+  Skeleton,
 } from '@mui/material';
 import DashboardCard from './DashboardCard';
 import PersonIcon from '@mui/icons-material/Person';
@@ -101,17 +102,29 @@ const EmployeeDashboard = () => {
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Typography>Loading dashboard...</Typography>
+        <Skeleton variant="text" width={320} height={40} sx={{ mb: 2 }} />
+        <Grid container spacing={3}>
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={i}>
+              <Skeleton variant="rounded" height={160} sx={{ borderRadius: 2 }} />
+            </Grid>
+          ))}
+        </Grid>
       </Container>
     );
   }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: 3 }}>
-        <Typography variant="h4" fontWeight={600}>
-          Personalized Employee Dashboard
-        </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: 4 }}>
+        <Box>
+          <Typography variant="h4" fontWeight={700} gutterBottom>
+            Personalized Employee Dashboard
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Your modules and quick access
+          </Typography>
+        </Box>
         <Button
           startIcon={personalizeOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
           endIcon={<SettingsIcon />}
@@ -123,7 +136,7 @@ const EmployeeDashboard = () => {
       </Box>
 
       <Collapse in={personalizeOpen}>
-        <Paper elevation={2} sx={{ p: 2, mb: 3 }}>
+        <Paper elevation={1} sx={{ p: 2.5, mb: 3, border: '1px solid', borderColor: 'divider' }}>
           <Typography variant="subtitle1" fontWeight={600} gutterBottom>
             Add or remove cards
           </Typography>
@@ -157,11 +170,11 @@ const EmployeeDashboard = () => {
       </Collapse>
 
       {visibleModules.length === 0 ? (
-        <Paper elevation={2} sx={{ p: 4, textAlign: 'center' }}>
+        <Paper elevation={1} sx={{ p: 4, textAlign: 'center', border: '1px solid', borderColor: 'divider' }}>
           <Typography color="text.secondary" gutterBottom>
             No cards visible. Open &quot;Personalize dashboard&quot; and enable at least one card, then Save.
           </Typography>
-          <Button variant="outlined" onClick={() => setPersonalizeOpen(true)} sx={{ mt: 1 }}>
+          <Button variant="contained" onClick={() => setPersonalizeOpen(true)} sx={{ mt: 2 }}>
             Personalize dashboard
           </Button>
         </Paper>

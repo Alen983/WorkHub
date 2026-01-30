@@ -18,17 +18,65 @@ import Wellness from './components/Wellness/Wellness';
 import Compliance from './components/Compliance/Compliance';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import Echo from './components/Chatbot/Echo';
+import HRNavbar from './components/HRPortal/HRNavbar';
+import HRProtectedRoute from './components/HRPortal/HRProtectedRoute';
 
 const theme = createTheme({
   palette: {
     primary: {
       main: '#3B2F53',
+      light: '#5E4D7A',
+      dark: '#2A223D',
     },
     secondary: {
-      main: '#ffffff',
+      main: '#0D9488',
+      light: '#14B8A6',
+      dark: '#0F766E',
     },
     background: {
-      default: '#ffffff',
+      default: '#F8FAFC',
+      paper: '#ffffff',
+    },
+    success: { main: '#059669' },
+    warning: { main: '#D97706' },
+    error: { main: '#DC2626' },
+    info: { main: '#0284C7' },
+  },
+  typography: {
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    h4: { fontWeight: 700 },
+    h5: { fontWeight: 600 },
+    h6: { fontWeight: 600 },
+    subtitle1: { fontWeight: 600 },
+  },
+  shape: {
+    borderRadius: 8,
+  },
+  spacing: 8,
+  components: {
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          textTransform: 'none',
+        },
+      },
     },
   },
 });
@@ -36,18 +84,15 @@ const theme = createTheme({
 const DashboardRouter = () => {
   const { user } = useAuth();
 
-  // #region agent log
-  fetch('http://127.0.0.1:7243/ingest/c97bdf2a-ba3b-4d68-ac8d-51af73b942ab',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'App.jsx:DashboardRouter',message:'dashboard router render',data:{hasUser:!!user,role:user?.role,loading:user===undefined},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
-
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
   const role = (user.role || '').toLowerCase();
   if (role === 'hr') {
-    return <HRDashboard />;
-  } else if (role === 'manager') {
+    return <Navigate to="/hr" replace />;
+  }
+  if (role === 'manager') {
     return <ManagerDashboard />;
   } else {
     return <EmployeeDashboard />;
@@ -62,6 +107,16 @@ function App() {
         <Router>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/hr/login" element={<Navigate to="/login" replace />} />
+            <Route
+              path="/hr"
+              element={
+                <HRProtectedRoute>
+                  <HRNavbar />
+                  <HRDashboard />
+                </HRProtectedRoute>
+              }
+            />
             <Route
               path="/dashboard"
               element={
@@ -163,6 +218,7 @@ function App() {
               }
             />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/hr/*" element={<Navigate to="/hr" replace />} />
           </Routes>
         </Router>
       </AuthProvider>

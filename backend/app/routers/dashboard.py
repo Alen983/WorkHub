@@ -65,6 +65,47 @@ def get_dashboard(
             ) for l in leaves
         ]
     
+    elif current_user.role == "hr":
+        from app.models import UserLearningProgress
+        total_employees = db.query(User).filter(User.role == "employee").count()
+        apply_auto_approvals(db)
+        pending_leaves_all = (
+            db.query(LeaveRequest).filter(LeaveRequest.status == "Pending").join(User).all()
+        )
+        dashboard_data.pending_leaves = [
+            LeaveRequestResponse(
+                id=l.id,
+                employee_id=l.employee_id,
+                department=l.department,
+                from_date=l.from_date,
+                to_date=l.to_date,
+                reason=l.reason,
+                status=l.status,
+                employee_name=l.employee.name if l.employee else None,
+                created_at=getattr(l, "created_at", None),
+            )
+            for l in pending_leaves_all
+        ]
+        today = date.today()
+        compliance_due = db.query(CompliancePolicy).filter(CompliancePolicy.due_date >= today).count()
+        compliance_overdue = db.query(CompliancePolicy).filter(CompliancePolicy.due_date < today).count()
+        total_learning = db.query(LearningContent).count()
+        completed_learning = db.query(UserLearningProgress).filter(UserLearningProgress.status == "completed").count()
+        learning_pct = min(100, round(100 * completed_learning / total_learning, 0)) if total_learning else 0
+        ai_insights = []
+        if len(pending_leaves_all) > 5:
+            ai_insights.append(f"{len(pending_leaves_all)} leave requests pending approval across the organization.")
+        if compliance_overdue > 0:
+            ai_insights.append(f"{compliance_overdue} compliance policy/policies overdue.")
+        dashboard_data.recommendations = {
+            "total_employees": total_employees,
+            "pending_leaves_count": len(pending_leaves_all),
+            "compliance_due": compliance_due,
+            "compliance_overdue": compliance_overdue,
+            "learning_completion_pct": learning_pct,
+            "ai_insights": ai_insights[:5],
+        }
+
     elif current_user.role == "manager":
         team_members = db.query(User).filter(
             User.department == current_user.department,

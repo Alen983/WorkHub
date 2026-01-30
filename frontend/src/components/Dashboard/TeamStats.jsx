@@ -39,23 +39,25 @@ const TeamStats = ({ stats }) => {
       {statCards.map((stat, index) => (
         <Grid item xs={12} sm={6} md={3} key={index}>
           <Paper
-            elevation={2}
+            elevation={1}
             sx={{
-              p: 2,
+              p: 2.5,
               display: 'flex',
               alignItems: 'center',
               gap: 2,
-              bgcolor: '#f5f5f5'
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: 2,
             }}
           >
-            <Box sx={{ color: stat.color, fontSize: 40 }}>
+            <Box sx={{ color: stat.color, fontSize: 36, display: 'flex', alignItems: 'center' }}>
               {stat.icon}
             </Box>
             <Box>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: stat.color }}>
+              <Typography variant="h4" fontWeight={700} sx={{ color: stat.color, lineHeight: 1.2 }}>
                 {stat.value}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" fontWeight={500}>
                 {stat.label}
               </Typography>
             </Box>

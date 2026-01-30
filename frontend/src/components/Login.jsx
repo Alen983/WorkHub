@@ -24,7 +24,10 @@ const Login = () => {
     
     const result = await login(email, password);
     if (result.success) {
-      navigate('/dashboard');
+      const userStr = localStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+      const role = (user?.role || '').toLowerCase();
+      navigate(role === 'hr' ? '/hr' : '/dashboard', { replace: true });
     } else {
       setError(result.error);
     }
@@ -38,11 +41,24 @@ const Login = () => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          minHeight: '60vh',
         }}
       >
-        <Paper elevation={3} sx={{ padding: 4, width: '100%' }}>
-          <Typography component="h1" variant="h5" align="center" gutterBottom>
-            Employee Portal Login
+        <Paper
+          elevation={1}
+          sx={{
+            padding: 4,
+            width: '100%',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 2,
+          }}
+        >
+          <Typography component="h1" variant="h5" align="center" fontWeight={700} gutterBottom>
+            WorkHub
+          </Typography>
+          <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>
+            Sign in to WorkHub
           </Typography>
           {error && (
             <Alert severity="error" sx={{ mt: 2 }}>
@@ -78,7 +94,8 @@ const Login = () => {
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
+              size="medium"
+              sx={{ mt: 3, mb: 2, py: 1.5 }}
             >
               Sign In
             </Button>
