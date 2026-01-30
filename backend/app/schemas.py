@@ -266,3 +266,89 @@ class CareerPath(BaseModel):
 class CareerRoadmapResponse(BaseModel):
     current_role: CareerRoleInfo
     paths: List[CareerPath] = []
+
+
+# Wellness & Engagement
+class WellnessLink(BaseModel):
+    name: str
+    url: str
+    description: Optional[str] = None
+
+
+class WellnessResourceResponse(BaseModel):
+    title: str
+    content: Optional[str] = None
+    category: Optional[str] = None
+    url: Optional[str] = None
+
+
+class MentalHealthTip(BaseModel):
+    title: str
+    content: str
+    category: Optional[str] = None
+
+
+class WorkLifeContent(BaseModel):
+    title: str
+    content: str
+    url: Optional[str] = None
+
+
+class SurveyQuestion(BaseModel):
+    id: str
+    question: str
+    type: str  # single_choice, multiple_choice, scale, text
+    options: Optional[List[str]] = None
+
+
+class SurveyListItem(BaseModel):
+    id: str
+    title: str
+    description: Optional[str] = None
+
+
+class SurveyDetail(SurveyListItem):
+    questions: List[SurveyQuestion] = []
+
+
+class SurveySubmitRequest(BaseModel):
+    responses: dict  # question_id -> value (string or number or list)
+
+
+class WellnessNudge(BaseModel):
+    message: str
+    type: str  # break, work_life, learning, mental_health, general
+    priority: int = 0  # higher = show first
+
+
+# Compliance & Policies
+class ComplianceRule(BaseModel):
+    id: str
+    text: str
+
+
+class ComplianceCategory(BaseModel):
+    slug: str
+    name: str
+    rule_count: int
+    explanation: Optional[str] = None
+    rules: List[ComplianceRule] = []
+
+
+class PolicyAcknowledgementResponse(BaseModel):
+    policy_slug: str
+    acknowledged_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
+
+
+class CertificationAlert(BaseModel):
+    title: str
+    expiry_date: str
+    days_until_expiry: int
+
+
+class ComplianceReminder(BaseModel):
+    message: str
+    type: str  # acknowledgement, certification, due_task

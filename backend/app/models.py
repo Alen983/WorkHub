@@ -127,3 +127,14 @@ class UserDocument(Base):
     uploaded_at = Column(DateTime, default=datetime.utcnow)
     
     user = relationship("User", back_populates="documents")
+
+
+class PolicyAcknowledgement(Base):
+    __tablename__ = "policy_acknowledgements"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    policy_slug = Column(String, nullable=False)  # hr, ai, it, finance
+    acknowledged_at = Column(DateTime, default=datetime.utcnow)
+    
+    user = relationship("User", backref="policy_acknowledgements")
