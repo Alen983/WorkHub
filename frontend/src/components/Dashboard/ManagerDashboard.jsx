@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Container, Typography, Box, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Grid, Tabs, Tab, Checkbox, TextField, InputAdornment } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import DashboardCard from './DashboardCard';
@@ -10,15 +10,51 @@ import TeamCompliance from './TeamCompliance';
 import api from '../../services/api';
 import { format } from 'date-fns';
 
+const AUTO_APPROVE_SECONDS = 5 * 60;
+function getRemainingSeconds(createdAt) {
+  if (!createdAt) return null;
+  const created = new Date(createdAt).getTime();
+  const elapsed = Math.floor((Date.now() - created) / 1000);
+  return Math.max(0, AUTO_APPROVE_SECONDS - elapsed);
+}
+function formatCountdown(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
 const ManagerDashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [tabValue, setTabValue] = useState(0);
   const [selectedLeaves, setSelectedLeaves] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [tick, setTick] = useState(0);
+  const refetchedOnZero = useRef(new Set());
 
   useEffect(() => {
     loadDashboard();
   }, []);
+
+  const pendingWithTimer = dashboardData?.pending_leaves?.filter(
+    (l) => l.status === 'Pending' && l.created_at
+  ) || [];
+  useEffect(() => {
+    if (pendingWithTimer.length === 0) return;
+    const id = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(id);
+  }, [pendingWithTimer.length]);
+
+  useEffect(() => {
+    if (pendingWithTimer.length === 0) return;
+    for (const leave of dashboardData?.pending_leaves || []) {
+      if (leave.status !== 'Pending' || !leave.created_at) continue;
+      const remaining = getRemainingSeconds(leave.created_at);
+      if (remaining <= 0 && !refetchedOnZero.current.has(leave.id)) {
+        refetchedOnZero.current.add(leave.id);
+        loadDashboard();
+      }
+    }
+  }, [tick, pendingWithTimer.length, dashboardData?.pending_leaves]);
 
   const loadDashboard = async () => {
     try {
@@ -205,7 +241,20 @@ const ManagerDashboard = () => {
                             <TableCell>{format(new Date(leave.to_date), 'MMM dd, yyyy')}</TableCell>
                             <TableCell>{leave.reason}</TableCell>
                             <TableCell>
-                              <Chip label={leave.status} color="warning" size="small" />
+                              {leave.created_at ? (
+                                (() => {
+                                  const remaining = getRemainingSeconds(leave.created_at);
+                                  return (
+                                    <Chip
+                                      label={remaining > 0 ? `Auto-approve in ${formatCountdown(remaining)}` : 'Auto-approving…'}
+                                      color="warning"
+                                      size="small"
+                                    />
+                                  );
+                                })()
+                              ) : (
+                                <Chip label={leave.status} color="warning" size="small" />
+                              )}
                             </TableCell>
                             <TableCell>
                               <Button

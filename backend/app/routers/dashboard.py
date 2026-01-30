@@ -4,6 +4,7 @@ from app.database import get_db
 from app.models import User, LeaveRequest, DashboardConfig, CompliancePolicy, LearningContent, LeaveBalance
 from app.schemas import DashboardData, DashboardConfigUpdate, DashboardConfigResponse, LeaveRequestResponse, UserResponse
 from app.dependencies import get_current_user
+from app.routers.leave import apply_auto_approvals
 from datetime import date, datetime
 import json
 
@@ -47,6 +48,7 @@ def get_dashboard(
     ))
     
     if current_user.role == "employee":
+        apply_auto_approvals(db)
         leaves = db.query(LeaveRequest).filter(
             LeaveRequest.employee_id == current_user.id
         ).all()
@@ -58,7 +60,8 @@ def get_dashboard(
                 from_date=l.from_date,
                 to_date=l.to_date,
                 reason=l.reason,
-                status=l.status
+                status=l.status,
+                created_at=getattr(l, "created_at", None),
             ) for l in leaves
         ]
     
@@ -105,6 +108,7 @@ def get_dashboard(
             ) for m in team_members_with_status
         ]
         
+        apply_auto_approvals(db)
         pending_leaves = db.query(LeaveRequest).filter(
             LeaveRequest.department == current_user.department,
             LeaveRequest.status == "Pending"
@@ -118,7 +122,8 @@ def get_dashboard(
                 to_date=l.to_date,
                 reason=l.reason,
                 status=l.status,
-                employee_name=l.employee.name
+                employee_name=l.employee.name,
+                created_at=getattr(l, "created_at", None),
             ) for l in pending_leaves
         ]
         

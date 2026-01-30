@@ -2,12 +2,39 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User, LearningContent, CompliancePolicy
-from app.schemas import RecommendationResponse, LearningContentResponse, CompliancePolicyResponse
+from app.schemas import (
+    RecommendationResponse,
+    LearningContentResponse,
+    CompliancePolicyResponse,
+    LearningPath,
+    LearningPathStep,
+)
 from app.dependencies import get_current_user
 from datetime import date
 import json
 
 router = APIRouter(prefix="/recommendations", tags=["recommendations"])
+
+# Role/department -> suggested certifications for AI recommendations
+ROLE_BASED_CERTS = {
+    ("employee", "engineering"): ["AWS Certified Developer", "Google Cloud Professional", "Kubernetes (CKA)"],
+    ("employee", "sales"): ["Salesforce Certified", "HubSpot Sales", "Negotiation Certification"],
+    ("employee", "hr"): ["SHRM-CP", "HR Analytics", "Diversity & Inclusion"],
+    ("manager", "engineering"): ["AWS Solutions Architect", "PMP", "Agile Certified"],
+    ("manager", "sales"): ["Sales Leadership", "Executive Presence"],
+    ("hr", "hr"): ["SHRM-SCP", "Compensation & Benefits", "Talent Acquisition"],
+}
+
+
+def _tags_list(c):
+    if c is None or not hasattr(c, "tags"):
+        return []
+    if isinstance(c.tags, list):
+        return c.tags
+    try:
+        return json.loads(c.tags) if c.tags else []
+    except Exception:
+        return []
 
 
 @router.get("", response_model=RecommendationResponse)
@@ -59,6 +86,46 @@ def get_recommendations(
     
     recommended_learning.sort(key=lambda x: x[0], reverse=True)
     top_learning = [content for _, content in recommended_learning[:5]]
+
+    # Skill gaps: skills from recommended learning / role minus user skills
+    suggested_skills = set()
+    for content in top_learning:
+        for t in _tags_list(content):
+            if isinstance(t, str) and t.strip():
+                suggested_skills.add(t.strip())
+    suggested_skills.add(current_user.department)
+    user_skills_set = {s.strip().lower() for s in user_skills if isinstance(s, str)}
+    skill_gaps = [s for s in suggested_skills if s.lower() not in user_skills_set][:15]
+
+    # Role-based certifications
+    key = (current_user.role.lower(), current_user.department.lower())
+    role_based_certifications = ROLE_BASED_CERTS.get(key, [])
+    for k, v in ROLE_BASED_CERTS.items():
+        if k[1] == current_user.department.lower() and not role_based_certifications:
+            role_based_certifications = v
+            break
+
+    # Learning path: one path "Recommended for you" with top courses as steps
+    learning_paths = []
+    if top_learning:
+        learning_paths = [
+            LearningPath(
+                name="Recommended for you",
+                steps=[
+                    LearningPathStep(
+                        order=i + 1,
+                        content=LearningContentResponse(
+                            id=c.id,
+                            title=c.title,
+                            tags=_tags_list(c),
+                            level=c.level,
+                            description=c.description,
+                        ),
+                    )
+                    for i, c in enumerate(top_learning)
+                ],
+            )
+        ]
     
     for content in top_learning:
         content.tags = json.loads(content.tags) if content.tags else []
@@ -109,7 +176,10 @@ def get_recommendations(
                 description=p.description
             ) for p in compliance_list[:5]
         ],
-        explanations=explanations[:5]
+        explanations=explanations[:5],
+        skill_gaps=skill_gaps,
+        role_based_certifications=role_based_certifications,
+        learning_paths=learning_paths,
     )
 
 
@@ -146,5 +216,8 @@ def get_team_compliance(
                 description=p.description
             ) for p in compliance_list
         ],
-        explanations=[]
+        explanations=[],
+        skill_gaps=[],
+        role_based_certifications=[],
+        learning_paths=[],
     )

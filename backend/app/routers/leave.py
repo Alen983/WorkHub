@@ -14,6 +14,71 @@ import json
 
 router = APIRouter(prefix="/leave", tags=["leave"])
 
+AUTO_APPROVE_MINUTES = 5
+
+
+def _parse_created_at(created):
+    if created is None:
+        return None
+    if isinstance(created, datetime):
+        return created.replace(tzinfo=None) if created.tzinfo else created
+    if isinstance(created, str):
+        try:
+            dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
+            return dt.replace(tzinfo=None) if dt.tzinfo else dt
+        except Exception:
+            return None
+    return None
+
+
+def apply_auto_approvals(db: Session):
+    """Auto-approve Pending leaves older than AUTO_APPROVE_MINUTES."""
+    now = datetime.utcnow()
+    threshold = now - timedelta(minutes=AUTO_APPROVE_MINUTES)
+    leaves = db.query(LeaveRequest).filter(
+        LeaveRequest.status == "Pending",
+        LeaveRequest.created_at.isnot(None),
+    ).all()
+    current_year = now.year
+    for leave in leaves:
+        created = _parse_created_at(leave.created_at)
+        if created is None or created > threshold:
+            continue
+        leave.status = "Approved"
+        balance = db.query(LeaveBalance).filter(
+            LeaveBalance.user_id == leave.employee_id,
+            LeaveBalance.year == current_year,
+        ).first()
+        if balance:
+            days_diff = (leave.to_date - leave.from_date).days + 1
+            balance.used_leaves += days_diff
+            balance.remaining_leaves = balance.total_leaves - balance.used_leaves
+        else:
+            days_diff = (leave.to_date - leave.from_date).days + 1
+            new_balance = LeaveBalance(
+                user_id=leave.employee_id,
+                total_leaves=20,
+                used_leaves=days_diff,
+                remaining_leaves=20 - days_diff,
+                year=current_year,
+            )
+            db.add(new_balance)
+    db.commit()
+
+
+def leave_to_response(l) -> LeaveRequestResponse:
+    return LeaveRequestResponse(
+        id=l.id,
+        employee_id=l.employee_id,
+        department=l.department,
+        from_date=l.from_date,
+        to_date=l.to_date,
+        reason=l.reason,
+        status=l.status,
+        employee_name=getattr(l.employee, "name", None) if hasattr(l, "employee") and l.employee else None,
+        created_at=getattr(l, "created_at", None),
+    )
+
 
 @router.post("/apply", response_model=LeaveRequestResponse)
 def apply_for_leave(
@@ -39,12 +104,38 @@ def apply_for_leave(
         from_date=leave_data.from_date,
         to_date=leave_data.to_date,
         reason=leave_data.reason,
-        status="Pending"
+        status="Pending",
+        created_at=datetime.utcnow(),
     )
     db.add(new_leave)
     db.commit()
     db.refresh(new_leave)
-    return new_leave
+    return leave_to_response(new_leave)
+
+
+@router.delete("/my/{leave_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_my_leave(
+    leave_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    leave = db.query(LeaveRequest).filter(
+        LeaveRequest.id == leave_id,
+        LeaveRequest.employee_id == current_user.id,
+    ).first()
+    if not leave:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Leave request not found",
+        )
+    if leave.status != "Pending":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only pending leave requests can be deleted",
+        )
+    db.delete(leave)
+    db.commit()
+    return None
 
 
 @router.get("/my", response_model=list[LeaveRequestResponse])
@@ -52,10 +143,11 @@ def get_my_leaves(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    apply_auto_approvals(db)
     leaves = db.query(LeaveRequest).filter(
         LeaveRequest.employee_id == current_user.id
     ).order_by(LeaveRequest.from_date.desc()).all()
-    return leaves
+    return [leave_to_response(l) for l in leaves]
 
 
 @router.get("/pending", response_model=list[LeaveRequestResponse])
@@ -63,23 +155,12 @@ def get_pending_leaves(
     current_user: User = Depends(require_role("manager")),
     db: Session = Depends(get_db)
 ):
+    apply_auto_approvals(db)
     pending_leaves = db.query(LeaveRequest).filter(
         LeaveRequest.department == current_user.department,
         LeaveRequest.status == "Pending"
     ).join(User).order_by(LeaveRequest.from_date).all()
-    
-    return [
-        LeaveRequestResponse(
-            id=l.id,
-            employee_id=l.employee_id,
-            department=l.department,
-            from_date=l.from_date,
-            to_date=l.to_date,
-            reason=l.reason,
-            status=l.status,
-            employee_name=l.employee.name
-        ) for l in pending_leaves
-    ]
+    return [leave_to_response(l) for l in pending_leaves]
 
 
 @router.post("/approve", response_model=LeaveRequestResponse)
@@ -116,7 +197,7 @@ def approve_leave(
     leave.status = approval.status
     db.commit()
     db.refresh(leave)
-    
+
     if approval.status == "Approved":
         current_year = datetime.now().year
         balance = db.query(LeaveBalance).filter(
@@ -140,8 +221,8 @@ def approve_leave(
             )
             db.add(new_balance)
             db.commit()
-    
-    return leave
+
+    return leave_to_response(leave)
 
 
 @router.get("/team-calendar", response_model=TeamCalendarResponse)
@@ -251,10 +332,10 @@ def get_leave_history(
     end_date: Optional[date] = Query(None),
     employee_id: Optional[int] = Query(None)
 ):
+    apply_auto_approvals(db)
     query = db.query(LeaveRequest).filter(
         LeaveRequest.department == current_user.department
     ).join(User)
-    
     if status_filter:
         query = query.filter(LeaveRequest.status == status_filter)
     if start_date:
@@ -263,21 +344,8 @@ def get_leave_history(
         query = query.filter(LeaveRequest.to_date <= end_date)
     if employee_id:
         query = query.filter(LeaveRequest.employee_id == employee_id)
-    
     leaves = query.order_by(LeaveRequest.from_date.desc()).all()
-    
-    return [
-        LeaveRequestResponse(
-            id=l.id,
-            employee_id=l.employee_id,
-            department=l.department,
-            from_date=l.from_date,
-            to_date=l.to_date,
-            reason=l.reason,
-            status=l.status,
-            employee_name=l.employee.name
-        ) for l in leaves
-    ]
+    return [leave_to_response(l) for l in leaves]
 
 
 @router.post("/bulk-approve")

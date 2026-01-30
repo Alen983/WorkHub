@@ -48,8 +48,8 @@ const LeaveApplication = () => {
       });
       setSuccess(true);
       setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
+        navigate('/leave');
+      }, 1500);
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to submit leave request');
     }

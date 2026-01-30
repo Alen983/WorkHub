@@ -1,5 +1,5 @@
 from app.database import SessionLocal, engine
-from app.models import Base, User, UserDocument, DashboardConfig, CompliancePolicy, LearningContent, LeaveBalance
+from app.models import Base, User, UserDocument, DashboardConfig, CompliancePolicy, LearningContent, LeaveBalance, UserLearningProgress, UserLearningAssignment
 from app.auth import get_password_hash
 import json
 from datetime import datetime
@@ -39,6 +39,17 @@ with engine.connect() as conn:
                 conn.commit()
             except Exception:
                 conn.rollback()
+    try:
+        r = conn.execute(__import__("sqlalchemy").text("PRAGMA table_info(leave_requests)"))
+        lcols = [row[1] for row in r.fetchall()]
+    except Exception:
+        lcols = []
+    if "created_at" not in lcols:
+        try:
+            conn.execute(__import__("sqlalchemy").text("ALTER TABLE leave_requests ADD COLUMN created_at TEXT"))
+            conn.commit()
+        except Exception:
+            conn.rollback()
 
 db = SessionLocal()
 
@@ -55,7 +66,7 @@ try:
             "address": "123 Tech Park, Engineering Wing",
             "interests": ["AI", "Web Development"],
             "certifications": [{"title": "AWS Certified", "issuer": "Amazon", "date": "2024-01", "expiry": None}],
-            "career_preferences": {"goals": ["Tech Lead"], "preferred_roles": ["Senior Developer"], "work_prefs": "Hybrid"},
+            "career_preferences": {"goals": ["Tech Lead"], "preferred_roles": ["Senior Developer"], "work_prefs": "Hybrid", "current_role": "Data Scientist"},
         },
         {
             "name": "Jane Manager",
@@ -83,7 +94,7 @@ try:
             "department": "Engineering",
             "skills": ["JavaScript", "Node.js"],
             "interests": ["Backend", "APIs"],
-            "career_preferences": {"goals": ["Architect"], "work_prefs": "Remote"},
+            "career_preferences": {"goals": ["Architect"], "work_prefs": "Remote", "current_role": "Software Engineer"},
         },
         {
             "name": "Alice Sales",

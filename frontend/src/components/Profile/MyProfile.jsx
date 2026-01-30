@@ -100,6 +100,7 @@ const MyProfile = () => {
             }))
           : [{ title: '', issuer: '', date: '', expiry: '' }],
         career_preferences: {
+          current_role: prefs.current_role || '',
           goals: Array.isArray(prefs.goals) ? prefs.goals.join(', ') : (prefs.goals || ''),
           preferred_roles: Array.isArray(prefs.preferred_roles) ? prefs.preferred_roles.join(', ') : (prefs.preferred_roles || ''),
           work_prefs: prefs.work_prefs || '',
@@ -160,6 +161,7 @@ const MyProfile = () => {
         interests: Array.isArray(editForm.interests) ? editForm.interests : (editForm.interests || '').toString().split(',').map((s) => s.trim()).filter(Boolean),
         certifications: certs,
         career_preferences: {
+          current_role: (prefs.current_role || '').toString().trim() || null,
           goals: (prefs.goals || '').toString().split(',').map((s) => s.trim()).filter(Boolean),
           preferred_roles: (prefs.preferred_roles || '').toString().split(',').map((s) => s.trim()).filter(Boolean),
           work_prefs: prefs.work_prefs || '',
@@ -414,6 +416,7 @@ const MyProfile = () => {
           <Button startIcon={<AddCircleOutlineIcon />} size="small" onClick={addCertification} sx={{ mb: 2 }}>Add certification</Button>
 
           <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 2, mb: 0.5 }}>Career preferences</Typography>
+          <TextField fullWidth label="Current role" value={editForm.career_preferences?.current_role || ''} onChange={(e) => setEditForm((f) => ({ ...f, career_preferences: { ...(f.career_preferences || {}), current_role: e.target.value } }))} margin="dense" placeholder="e.g. Data Scientist, Software Engineer" helperText="Used for your career roadmap" />
           <TextField fullWidth label="Goals (comma-separated)" value={editForm.career_preferences?.goals || ''} onChange={(e) => setEditForm((f) => ({ ...f, career_preferences: { ...(f.career_preferences || {}), goals: e.target.value } }))} margin="dense" placeholder="e.g. Tech Lead, Architect" />
           <TextField fullWidth label="Preferred roles (comma-separated)" value={editForm.career_preferences?.preferred_roles || ''} onChange={(e) => setEditForm((f) => ({ ...f, career_preferences: { ...(f.career_preferences || {}), preferred_roles: e.target.value } }))} margin="dense" placeholder="e.g. Senior Developer" />
           <TextField fullWidth label="Work preferences" value={editForm.career_preferences?.work_prefs || ''} onChange={(e) => setEditForm((f) => ({ ...f, career_preferences: { ...(f.career_preferences || {}), work_prefs: e.target.value } }))} margin="dense" placeholder="e.g. Remote, Hybrid" />

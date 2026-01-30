@@ -76,6 +76,7 @@ class LeaveRequestResponse(BaseModel):
     reason: str
     status: str
     employee_name: Optional[str] = None
+    created_at: Optional[datetime] = None
     
     class Config:
         from_attributes = True
@@ -122,6 +123,37 @@ class LearningContentResponse(BaseModel):
         from_attributes = True
 
 
+class LearningProgressResponse(BaseModel):
+    learning_content_id: int
+    status: str  # not_started, in_progress, completed
+    completed_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
+
+
+class LearningProgressUpdate(BaseModel):
+    learning_content_id: int
+    status: str  # not_started, in_progress, completed
+    completed_at: Optional[datetime] = None
+
+
+class LearningContentWithProgress(LearningContentResponse):
+    progress_status: Optional[str] = None
+    completed_at: Optional[datetime] = None
+
+
+class AssignmentResponse(BaseModel):
+    id: int
+    learning_content_id: int
+    assigned_at: datetime
+    due_date: Optional[date] = None
+    content: Optional[LearningContentResponse] = None
+    
+    class Config:
+        from_attributes = True
+
+
 class DashboardConfigUpdate(BaseModel):
     show_leaves: Optional[bool] = None
     show_learning: Optional[bool] = None
@@ -155,10 +187,23 @@ class DashboardData(BaseModel):
     config: Optional[DashboardConfigResponse] = None
 
 
+class LearningPathStep(BaseModel):
+    order: int
+    content: LearningContentResponse
+
+
+class LearningPath(BaseModel):
+    name: str
+    steps: List[LearningPathStep] = []
+
+
 class RecommendationResponse(BaseModel):
     learning_content: List[LearningContentResponse] = []
     compliance_policies: List[CompliancePolicyResponse] = []
     explanations: List[str] = []
+    skill_gaps: List[str] = []
+    role_based_certifications: List[str] = []
+    learning_paths: List[LearningPath] = []
 
 
 class ChatbotRequest(BaseModel):
@@ -200,3 +245,24 @@ class TeamCalendarResponse(BaseModel):
 class BulkLeaveApprovalRequest(BaseModel):
     leave_ids: List[int]
     status: str
+
+
+class CareerRoleInfo(BaseModel):
+    title: str
+    department: str
+
+
+class CareerPathNextRole(BaseModel):
+    title: str
+    department: str
+
+
+class CareerPath(BaseModel):
+    type: str  # most_common, similar, pivot
+    label: str
+    next_roles: List[CareerPathNextRole] = []
+
+
+class CareerRoadmapResponse(BaseModel):
+    current_role: CareerRoleInfo
+    paths: List[CareerPath] = []

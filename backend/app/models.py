@@ -37,6 +37,7 @@ class LeaveRequest(Base):
     to_date = Column(Date, nullable=False)
     reason = Column(String, nullable=False)
     status = Column(String, default="Pending")  # Pending, Approved, Rejected
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=True)
     
     employee = relationship("User", back_populates="leave_requests")
 
@@ -59,6 +60,33 @@ class LearningContent(Base):
     tags = Column(Text, default="[]")  # JSON string
     level = Column(String, nullable=False)
     description = Column(Text)
+
+
+class UserLearningProgress(Base):
+    __tablename__ = "user_learning_progress"
+    
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    learning_content_id = Column(Integer, ForeignKey("learning_content.id"), primary_key=True)
+    status = Column(String, default="not_started")  # not_started, in_progress, completed
+    completed_at = Column(DateTime, nullable=True)
+    
+    user = relationship("User", backref="learning_progress")
+    learning_content = relationship("LearningContent", backref="user_progress")
+
+
+class UserLearningAssignment(Base):
+    __tablename__ = "user_learning_assignments"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    learning_content_id = Column(Integer, ForeignKey("learning_content.id"), nullable=False)
+    assigned_at = Column(DateTime, default=datetime.utcnow)
+    due_date = Column(Date, nullable=True)
+    assigned_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    
+    user = relationship("User", foreign_keys=[user_id], backref="learning_assignments")
+    learning_content = relationship("LearningContent", backref="assignments")
+    assigned_by = relationship("User", foreign_keys=[assigned_by_id])
 
 
 class DashboardConfig(Base):

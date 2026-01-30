@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
-from app.routers import auth, users, dashboard, leave, admin, recommendations, chatbot
+from app.routers import auth, users, dashboard, leave, admin, recommendations, chatbot, career, learning
 
 Base.metadata.create_all(bind=engine)
 
@@ -22,6 +22,8 @@ app.include_router(leave.router)
 app.include_router(admin.router)
 app.include_router(recommendations.router)
 app.include_router(chatbot.router)
+app.include_router(career.router)
+app.include_router(learning.router)
 
 
 @app.get("/")
