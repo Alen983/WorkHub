@@ -50,10 +50,11 @@ function getPastThreeMonthsMockData() {
 
 const MOCK_ATTENDANCE = getPastThreeMonthsMockData();
 
+// Pastel (light) shades for calendar and chips
 const STATUS_COLORS = {
-  Present: { bg: 'success.main', color: 'white' },
-  Absent: { bg: 'error.main', color: 'white' },
-  WFH: { bg: 'info.main', color: 'white' },
+  Present: { bg: '#e8f5e9', color: '#1b5e20' },
+  Absent: { bg: '#ffebee', color: '#b71c1c' },
+  WFH: { bg: '#e3f2fd', color: '#0d47a1' },
 };
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -102,9 +103,9 @@ const Attendance = () => {
       totals.WFH += s.wfh;
     });
     return [
-      { name: 'Present', value: totals.Present, color: '#2e7d32' },
-      { name: 'Absent', value: totals.Absent, color: '#d32f2f' },
-      { name: 'Work from home', value: totals.WFH, color: '#0288d1' },
+      { name: 'Present', value: totals.Present, color: '#a5d6a7' },
+      { name: 'Absent', value: totals.Absent, color: '#ef9a9a' },
+      { name: 'Work from home', value: totals.WFH, color: '#90caf9' },
     ].filter((d) => d.value > 0);
   }, []);
 
@@ -196,7 +197,7 @@ const Attendance = () => {
 
       <Box sx={{ mt: 2, mb: 2 }}>
         <Typography variant="caption" color="text.secondary">
-          Green = Present · Red = Absent · Blue = Work from home
+          Light green = Present · Light red = Absent · Light blue = Work from home
         </Typography>
       </Box>
 
