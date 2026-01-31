@@ -31,6 +31,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import BackToDashboard from '../common/BackToDashboard';
 import api from '../../services/api';
 import { format } from 'date-fns';
+import { useAuth } from '../../context/AuthContext';
 
 const getInitials = (name) => {
   if (!name) return '?';
@@ -65,6 +66,7 @@ const LabelValue = ({ label, value }) => (
 );
 
 const MyProfile = () => {
+  const { setUser: setAuthUser } = useAuth();
   const [profile, setProfile] = useState(null);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -169,6 +171,11 @@ const MyProfile = () => {
       };
       const res = await api.patch('/users/me', payload);
       setProfile(res.data);
+      // Update AuthContext so other components (like Learning) can react to changes
+      if (setAuthUser) {
+        setAuthUser(res.data);
+        localStorage.setItem('user', JSON.stringify(res.data));
+      }
       setEditOpen(false);
     } catch (err) {
       console.error('Failed to save profile:', err);

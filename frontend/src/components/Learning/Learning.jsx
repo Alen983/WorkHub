@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import {
   Container,
   Typography,
@@ -36,6 +37,7 @@ import { format } from 'date-fns';
 const TAB_KEYS = { catalog: 0, assigned: 1, certs: 2, skillGap: 3, ai: 4 };
 
 const Learning = () => {
+  const { user } = useAuth();
   const [tab, setTab] = useState(0);
   const [catalog, setCatalog] = useState([]);
   const [progress, setProgress] = useState([]);
@@ -124,7 +126,12 @@ const Learning = () => {
   useEffect(() => { loadCatalog(); }, [levelFilter]);
   useEffect(() => { loadProgress(); }, []);
   useEffect(() => { loadAssigned(); }, []);
-  useEffect(() => { loadRecommendations(); }, []);
+  // Reload recommendations when user data changes (e.g., role or career preferences)
+  useEffect(() => { 
+    if (user) {
+      loadRecommendations(); 
+    }
+  }, [user?.role, user?.career_preferences?.current_role]);
   useEffect(() => { loadCertifications(); }, []);
 
   const getStatus = (contentId) => {
@@ -411,24 +418,6 @@ const Learning = () => {
                 </Box>
               )}
             </Paper>
-          </Box>
-          <Box>
-            <Typography variant="h6" sx={{ mb: 1 }}>Compliance-mandatory courses</Typography>
-            {compliancePolicies.length === 0 ? (
-              <Paper elevation={2} sx={{ p: 4, textAlign: 'center' }}>
-                <Typography color="text.secondary">No compliance policies due.</Typography>
-              </Paper>
-            ) : (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {compliancePolicies.map((p) => (
-                  <Paper key={p.id} elevation={2} sx={{ p: 2 }}>
-                    <Typography variant="subtitle1" fontWeight="medium">{p.title}</Typography>
-                    <Typography variant="body2" color="text.secondary">{p.description}</Typography>
-                    <Chip size="small" label={`Due: ${format(new Date(p.due_date), 'MMM d, yyyy')}`} color="warning" sx={{ mt: 1 }} />
-                  </Paper>
-                ))}
-              </Box>
-            )}
           </Box>
         </Box>
       )}

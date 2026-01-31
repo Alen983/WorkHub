@@ -167,41 +167,59 @@ try:
                 u.manager_id = mid
             db.commit()
     
-    compliance_policies = [
-        {
-            "title": "Data Privacy Policy",
-            "department": "Engineering",
-            "due_date": "2024-12-31",
-            "description": "Annual data privacy compliance review"
-        },
-        {
-            "title": "Code Review Standards",
-            "department": "Engineering",
-            "due_date": "2024-11-30",
-            "description": "Updated code review guidelines"
-        },
-        {
-            "title": "Sales Ethics Training",
-            "department": "Sales",
-            "due_date": "2024-12-15",
-            "description": "Quarterly sales ethics compliance"
-        }
-    ]
-    
-    for policy_data in compliance_policies:
-        existing = db.query(CompliancePolicy).filter(
-            CompliancePolicy.title == policy_data["title"],
-            CompliancePolicy.department == policy_data["department"]
-        ).first()
-        if not existing:
-            from datetime import datetime
-            policy = CompliancePolicy(
-                title=policy_data["title"],
-                department=policy_data["department"],
-                due_date=datetime.strptime(policy_data["due_date"], "%Y-%m-%d").date(),
-                description=policy_data["description"]
-            )
-            db.add(policy)
+    # Old policies - update them with categories
+    # Use raw SQL to update since SQLAlchemy might not see the column if it was added via migration
+    from sqlalchemy import text
+    try:
+        # Update old policies that don't have categories
+        conn = db.connection()
+        try:
+            result = conn.execute(text("""
+                UPDATE compliance_policies 
+                SET category = CASE 
+                    WHEN title LIKE '%Privacy%' OR title LIKE '%Data%' THEN 'IT Security Policy'
+                    WHEN title LIKE '%Code%' OR title LIKE '%Review%' THEN 'IT Security Policy'
+                    WHEN title LIKE '%Sales%' OR title LIKE '%Ethics%' THEN 'HR Compliance'
+                    ELSE 'General Compliance'
+                END
+                WHERE category IS NULL
+            """))
+            conn.commit()
+            print(f"✓ Updated {result.rowcount} old policies with categories")
+            
+            # Also ensure rules field exists for all policies
+            result2 = conn.execute(text("""
+                UPDATE compliance_policies 
+                SET rules = '[]'
+                WHERE rules IS NULL
+            """))
+            conn.commit()
+            if result2.rowcount > 0:
+                print(f"✓ Updated {result2.rowcount} policies with empty rules array")
+        finally:
+            conn.close()
+    except Exception as e:
+        print(f"Note: Could not update old policies via SQL: {e}")
+        # Fallback: try ORM approach
+        all_policies = db.query(CompliancePolicy).all()
+        for old_policy in all_policies:
+            category = getattr(old_policy, 'category', None)
+            if not category:
+                title_lower = old_policy.title.lower()
+                if "privacy" in title_lower or "data" in title_lower:
+                    old_policy.category = "IT Security Policy"
+                elif "code" in title_lower or "review" in title_lower:
+                    old_policy.category = "IT Security Policy"
+                elif "sales" in title_lower or "ethics" in title_lower:
+                    old_policy.category = "HR Compliance"
+                else:
+                    old_policy.category = "General Compliance"
+                
+                if not getattr(old_policy, 'rules', None):
+                    old_policy.rules = "[]"
+                
+                db.add(old_policy)
+        db.commit()
     
     learning_content = [
         {
