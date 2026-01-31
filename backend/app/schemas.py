@@ -105,6 +105,29 @@ class CompliancePolicyResponse(BaseModel):
         from_attributes = True
 
 
+class ComplianceCategoryRuleCreate(BaseModel):
+    category: str  # hr, ai, it, finance
+    rule_text: str
+
+
+class ComplianceCategoryRuleResponse(BaseModel):
+    id: int
+    category: str
+    rule_text: str
+    display_order: int = 0
+    
+    class Config:
+        from_attributes = True
+
+
+class ComplianceCategoryRulesByCategory(BaseModel):
+    """Response: { hr: [{ id, rule_text }], ai: [...], it: [...], finance: [...] }"""
+    hr: List[ComplianceCategoryRuleResponse] = []
+    ai: List[ComplianceCategoryRuleResponse] = []
+    it: List[ComplianceCategoryRuleResponse] = []
+    finance: List[ComplianceCategoryRuleResponse] = []
+
+
 class LearningContentCreate(BaseModel):
     title: str
     tags: List[str] = []

@@ -1,20 +1,18 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const HRProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  const location = useLocation();
 
   if (loading) {
-    return null;
+    return <div>Loading...</div>;
   }
 
   if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" replace />;
   }
 
-  const role = (user.role || '').toLowerCase();
-  if (role !== 'hr') {
+  if (user.role !== 'hr') {
     return <Navigate to="/dashboard" replace />;
   }
 

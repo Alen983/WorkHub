@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Grid,
@@ -21,6 +22,7 @@ import SchoolIcon from '@mui/icons-material/School';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import PolicyIcon from '@mui/icons-material/Policy';
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
@@ -46,9 +48,11 @@ const defaultConfig = {
   show_career: true,
   show_wellness: true,
   show_compliance: true,
+  show_complaints: true,
 };
 
 const EmployeeDashboard = () => {
+  const navigate = useNavigate();
   const [config, setConfig] = useState(defaultConfig);
   const [localConfig, setLocalConfig] = useState(defaultConfig);
   const [loading, setLoading] = useState(true);
@@ -75,13 +79,14 @@ const EmployeeDashboard = () => {
   const isVisible = (mod) => {
     const key = mod.configKey;
     if (key === 'leave') return config.show_leaves !== false;
+    if (key === 'complaints') return config.show_complaints !== false;
     return config[`show_${key}`] !== false;
   };
 
   const visibleModules = MODULES.filter(isVisible);
 
   const handleToggle = (key) => {
-    const field = key === 'leave' ? 'show_leaves' : `show_${key}`;
+    const field = key === 'leave' ? 'show_leaves' : key === 'complaints' ? 'show_complaints' : `show_${key}`;
     setLocalConfig((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
@@ -146,7 +151,7 @@ const EmployeeDashboard = () => {
           <FormGroup row sx={{ flexWrap: 'wrap', gap: 1 }}>
             {MODULES.map((mod) => {
               const key = mod.configKey;
-              const field = key === 'leave' ? 'show_leaves' : `show_${key}`;
+              const field = key === 'leave' ? 'show_leaves' : key === 'complaints' ? 'show_complaints' : `show_${key}`;
               const checked = localConfig[field] !== false;
               return (
                 <FormControlLabel
@@ -179,18 +184,57 @@ const EmployeeDashboard = () => {
           </Button>
         </Paper>
       ) : (
-        <Grid container spacing={3}>
-          {visibleModules.map((mod) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={mod.to}>
-              <DashboardCard
-                title={mod.title}
-                description={mod.description}
-                to={mod.to}
-                icon={mod.icon}
-              />
-            </Grid>
-          ))}
-        </Grid>
+        <>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: 2,
+              flexWrap: 'wrap',
+              mb: 3,
+              py: 1.5,
+              px: 2,
+              borderRadius: 2,
+              bgcolor: 'action.hover',
+              border: '1px solid',
+              borderColor: 'divider',
+            }}
+          >
+            <Typography variant="body2" color="text.secondary" sx={{ mr: 'auto' }}>
+              Have a concern? Report it to HR.
+            </Typography>
+            <Button
+              variant="contained"
+              color="warning"
+              size="medium"
+              startIcon={<ReportProblemIcon />}
+              onClick={() => navigate('/complaints')}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                px: 2.5,
+                py: 1.25,
+                boxShadow: 1,
+                '&:hover': { boxShadow: 2 },
+              }}
+            >
+              Raise a complaint
+            </Button>
+          </Box>
+          <Grid container spacing={3}>
+            {visibleModules.map((mod) => (
+              <Grid item xs={12} sm={6} md={4} lg={3} key={mod.to}>
+                <DashboardCard
+                  title={mod.title}
+                  description={mod.description}
+                  to={mod.to}
+                  icon={mod.icon}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        </>
       )}
     </Container>
   );

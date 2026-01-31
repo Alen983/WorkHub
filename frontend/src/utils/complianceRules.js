@@ -1,14 +1,13 @@
-import FolderIcon from '@mui/icons-material/Folder';
+import PolicyIcon from '@mui/icons-material/Policy';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
-import LockIcon from '@mui/icons-material/Lock';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import ComputerIcon from '@mui/icons-material/Computer';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 export const COMPLIANCE_CATEGORIES = [
   {
     id: 'hr',
     title: 'HR Compliance',
     ruleCount: 12,
-    icon: FolderIcon,
     rules: [
       'Employees must follow company working hours and attendance guidelines',
       'Biometric/ESS attendance manipulation is strictly prohibited',
@@ -23,12 +22,12 @@ export const COMPLIANCE_CATEGORIES = [
       'Resignation notice period policy must be respected',
       'Company assets must be returned on exit',
     ],
+    icon: PolicyIcon,
   },
   {
     id: 'ai',
     title: 'Responsible AI Policy',
     ruleCount: 12,
-    icon: SmartToyIcon,
     rules: [
       'AI systems must not be used to discriminate or bias decisions',
       'Employee data used for AI must be anonymized where possible',
@@ -43,12 +42,12 @@ export const COMPLIANCE_CATEGORIES = [
       'Data used in AI must have documented consent',
       'Security controls must protect AI pipelines',
     ],
+    icon: SmartToyIcon,
   },
   {
     id: 'it',
     title: 'IT Security Policy',
     ruleCount: 13,
-    icon: LockIcon,
     rules: [
       'Strong passwords with periodic changes are mandatory',
       'Two-factor authentication must be enabled',
@@ -64,12 +63,12 @@ export const COMPLIANCE_CATEGORIES = [
       'Data backups are performed regularly',
       'Unauthorized access attempts will lead to disciplinary action',
     ],
+    icon: ComputerIcon,
   },
   {
     id: 'finance',
     title: 'Financial Conduct Policy',
     ruleCount: 12,
-    icon: AccountBalanceIcon,
     rules: [
       'Expense claims must have valid receipts',
       'False expense claims lead to disciplinary action',
@@ -84,5 +83,6 @@ export const COMPLIANCE_CATEGORIES = [
       'Financial records must be accurately maintained',
       'Audits must be fully supported',
     ],
+    icon: AttachMoneyIcon,
   },
 ];

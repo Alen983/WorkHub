@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     wellness_counselling_url: str = "https://www.betterhelp.com/"
     wellness_yoga_url: str = "https://www.youtube.com/results?search_query=yoga+for+beginners"
     wellness_exercises_url: str = "https://www.youtube.com/results?search_query=office+exercises+stretch"
+    
     # AI: read from env API_KEY (server-side only, case-sensitive as specified)
     # Also supports api_key for backward compatibility
     api_key: str = ""

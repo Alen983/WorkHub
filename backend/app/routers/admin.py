@@ -2,10 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from app.database import get_db
-from app.models import User, CompliancePolicy, LearningContent, DashboardConfig
+from app.models import User, CompliancePolicy, ComplianceCategoryRule, LearningContent, DashboardConfig
 from app.schemas import (
     UserCreate, UserResponse,
     CompliancePolicyCreate, CompliancePolicyResponse,
+    ComplianceCategoryRuleCreate, ComplianceCategoryRuleResponse,
+    ComplianceCategoryRulesByCategory,
     LearningContentCreate, LearningContentResponse
 )
 from app.dependencies import require_role
@@ -122,6 +124,63 @@ def delete_compliance_policy(
     db.delete(policy)
     db.commit()
     return {"message": "Policy deleted successfully"}
+
+
+# Category rules (Policy rules by category) - HR can add rules under hr, ai, it, finance
+@router.get("/compliance-category-rules", response_model=ComplianceCategoryRulesByCategory)
+def list_compliance_category_rules(
+    current_user: User = Depends(require_role("hr")),
+    db: Session = Depends(get_db)
+):
+    rows = db.query(ComplianceCategoryRule).order_by(
+        ComplianceCategoryRule.category, ComplianceCategoryRule.display_order, ComplianceCategoryRule.id
+    ).all()
+    out = {"hr": [], "ai": [], "it": [], "finance": []}
+    for r in rows:
+        if r.category in out:
+            out[r.category].append(
+                ComplianceCategoryRuleResponse(id=r.id, category=r.category, rule_text=r.rule_text, display_order=r.display_order or 0)
+            )
+    return out
+
+
+@router.post("/compliance-category-rules", response_model=ComplianceCategoryRuleResponse)
+def create_compliance_category_rule(
+    body: ComplianceCategoryRuleCreate,
+    current_user: User = Depends(require_role("hr")),
+    db: Session = Depends(get_db)
+):
+    if body.category not in ("hr", "ai", "it", "finance"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="category must be one of: hr, ai, it, finance"
+        )
+    rule = ComplianceCategoryRule(
+        category=body.category,
+        rule_text=body.rule_text.strip(),
+        display_order=0
+    )
+    db.add(rule)
+    db.commit()
+    db.refresh(rule)
+    return rule
+
+
+@router.delete("/compliance-category-rules/{rule_id}")
+def delete_compliance_category_rule(
+    rule_id: int,
+    current_user: User = Depends(require_role("hr")),
+    db: Session = Depends(get_db)
+):
+    rule = db.query(ComplianceCategoryRule).filter(ComplianceCategoryRule.id == rule_id).first()
+    if not rule:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Category rule not found"
+        )
+    db.delete(rule)
+    db.commit()
+    return {"message": "Category rule deleted successfully"}
 
 
 @router.post("/learning", response_model=LearningContentResponse)

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User, LearningContent, UserLearningProgress, UserLearningAssignment
@@ -10,22 +10,23 @@ from app.schemas import (
 )
 from app.dependencies import get_current_user
 from datetime import datetime
-from typing import Optional, List
 import json
 
 router = APIRouter(prefix="/learning", tags=["learning"])
 
 
-def _tags_list(c):
-    if c.tags is None:
+def _tags_list(c: LearningContent) -> list:
+    if c is None or not hasattr(c, "tags"):
         return []
+    if isinstance(c.tags, list):
+        return c.tags
     try:
-        return json.loads(c.tags) if isinstance(c.tags, str) else c.tags
+        return json.loads(c.tags) if c.tags else []
     except Exception:
         return []
 
 
-def _content_to_response(c) -> LearningContentResponse:
+def _content_to_response(c: LearningContent) -> LearningContentResponse:
     return LearningContentResponse(
         id=c.id,
         title=c.title,
@@ -35,24 +36,21 @@ def _content_to_response(c) -> LearningContentResponse:
     )
 
 
-@router.get("/catalog", response_model=List[LearningContentResponse])
-def get_learning_catalog(
+@router.get("/catalog", response_model=list[LearningContentResponse])
+def get_catalog(
+    level: str | None = Query(None, description="Filter by level"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-    level: Optional[str] = Query(None),
-    tag: Optional[str] = Query(None),
 ):
-    query = db.query(LearningContent)
+    q = db.query(LearningContent)
     if level:
-        query = query.filter(LearningContent.level == level)
-    if tag:
-        query = query.filter(LearningContent.tags.contains(f'"{tag}"'))
-    items = query.order_by(LearningContent.title).all()
+        q = q.filter(LearningContent.level == level)
+    items = q.all()
     return [_content_to_response(c) for c in items]
 
 
-@router.get("/progress", response_model=List[LearningProgressResponse])
-def get_my_progress(
+@router.get("/progress", response_model=list[LearningProgressResponse])
+def get_progress(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -71,51 +69,8 @@ def get_my_progress(
     ]
 
 
-@router.patch("/progress", response_model=LearningProgressResponse)
-def update_my_progress(
-    update: LearningProgressUpdate,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    if update.status not in ("not_started", "in_progress", "completed"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="status must be not_started, in_progress, or completed",
-        )
-    content = db.query(LearningContent).filter(LearningContent.id == update.learning_content_id).first()
-    if not content:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Learning content not found")
-    row = (
-        db.query(UserLearningProgress)
-        .filter(
-            UserLearningProgress.user_id == current_user.id,
-            UserLearningProgress.learning_content_id == update.learning_content_id,
-        )
-        .first()
-    )
-    completed_at = datetime.utcnow() if update.status == "completed" else (update.completed_at or (row.completed_at if row else None))
-    if row:
-        row.status = update.status
-        row.completed_at = completed_at
-    else:
-        row = UserLearningProgress(
-            user_id=current_user.id,
-            learning_content_id=update.learning_content_id,
-            status=update.status,
-            completed_at=completed_at,
-        )
-        db.add(row)
-    db.commit()
-    db.refresh(row)
-    return LearningProgressResponse(
-        learning_content_id=row.learning_content_id,
-        status=row.status,
-        completed_at=row.completed_at,
-    )
-
-
-@router.get("/assigned", response_model=List[AssignmentResponse])
-def get_my_assignments(
+@router.get("/assigned", response_model=list[AssignmentResponse])
+def get_assigned(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -126,7 +81,11 @@ def get_my_assignments(
     )
     out = []
     for r in rows:
-        content = db.query(LearningContent).filter(LearningContent.id == r.learning_content_id).first()
+        content = (
+            db.query(LearningContent)
+            .filter(LearningContent.id == r.learning_content_id)
+            .first()
+        )
         out.append(
             AssignmentResponse(
                 id=r.id,
@@ -137,3 +96,33 @@ def get_my_assignments(
             )
         )
     return out
+
+
+@router.patch("/progress")
+def update_progress(
+    body: LearningProgressUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    progress = (
+        db.query(UserLearningProgress)
+        .filter(
+            UserLearningProgress.user_id == current_user.id,
+            UserLearningProgress.learning_content_id == body.learning_content_id,
+        )
+        .first()
+    )
+    if progress:
+        progress.status = body.status
+        if body.status == "completed":
+            progress.completed_at = datetime.utcnow()
+    else:
+        progress = UserLearningProgress(
+            user_id=current_user.id,
+            learning_content_id=body.learning_content_id,
+            status=body.status,
+            completed_at=datetime.utcnow() if body.status == "completed" else None,
+        )
+        db.add(progress)
+    db.commit()
+    return {"message": "Progress updated"}

@@ -16,10 +16,17 @@ import api from '../../services/api';
 import { format } from 'date-fns';
 import { COMPLIANCE_CATEGORIES } from '../../utils/complianceRules';
 
+const SORT_OPTIONS = [
+  { value: 'due_date', label: 'Due date' },
+  { value: 'title', label: 'Title' },
+  { value: 'department', label: 'Department' },
+];
+
 const Compliance = () => {
   const [data, setData] = useState({ compliance_policies: [] });
   const [loading, setLoading] = useState(true);
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [policySort, setPolicySort] = useState('due_date');
 
   useEffect(() => {
     const load = async () => {
@@ -35,7 +42,17 @@ const Compliance = () => {
     load();
   }, []);
 
-  const policies = data.compliance_policies || [];
+  const rawPolicies = data.compliance_policies || [];
+  const policies = [...rawPolicies].sort((a, b) => {
+    if (policySort === 'due_date') {
+      const da = a.due_date ? new Date(a.due_date).getTime() : 0;
+      const db = b.due_date ? new Date(b.due_date).getTime() : 0;
+      return da - db;
+    }
+    if (policySort === 'title') return (a.title || '').localeCompare(b.title || '');
+    if (policySort === 'department') return (a.department || '').localeCompare(b.department || '');
+    return 0;
+  });
   const displayedCategories =
     categoryFilter === 'all'
       ? COMPLIANCE_CATEGORIES
@@ -54,6 +71,25 @@ const Compliance = () => {
       <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1.5 }}>
         Your assigned policies (due dates)
       </Typography>
+      {rawPolicies.length > 0 && (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2, flexWrap: 'wrap' }}>
+          <FormControl size="small" sx={{ minWidth: 180 }} variant="outlined">
+            <InputLabel id="compliance-sort-label">Sort by</InputLabel>
+            <Select
+              labelId="compliance-sort-label"
+              value={policySort}
+              label="Sort by"
+              onChange={(e) => setPolicySort(e.target.value)}
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <MenuItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+      )}
       {loading ? (
         <Skeleton variant="rectangular" height={120} sx={{ borderRadius: 2, mb: 3 }} />
       ) : policies.length === 0 ? (

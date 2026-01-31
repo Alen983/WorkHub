@@ -52,6 +52,16 @@ class CompliancePolicy(Base):
     description = Column(Text)
 
 
+class ComplianceCategoryRule(Base):
+    """HR-added rules under Policy rules by category (hr, ai, it, finance)."""
+    __tablename__ = "compliance_category_rules"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    category = Column(String, nullable=False)  # hr, ai, it, finance
+    rule_text = Column(Text, nullable=False)
+    display_order = Column(Integer, default=0)
+
+
 class LearningContent(Base):
     __tablename__ = "learning_content"
     
