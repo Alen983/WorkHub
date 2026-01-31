@@ -150,6 +150,27 @@ class PolicyAcknowledgement(Base):
     user = relationship("User", backref="policy_acknowledgements")
 
 
+class Payroll(Base):
+    __tablename__ = "payroll"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    current_ctc = Column(Integer, nullable=False)  # Annual CTC in rupees
+    net_monthly = Column(Integer, nullable=False)  # Net monthly salary
+    basic = Column(Integer, nullable=False)
+    hra = Column(Integer, nullable=False)
+    special_allowance = Column(Integer, nullable=False)
+    other_allowances = Column(Integer, default=0)
+    pf = Column(Integer, nullable=False)
+    tds = Column(Integer, nullable=False)
+    other_deductions = Column(Integer, default=0)
+    financial_year = Column(String, nullable=False)  # e.g., "2024-25"
+    tax_regime = Column(String, default="Old regime")
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    user = relationship("User", backref="payroll")
+
+
 class Complaint(Base):
     __tablename__ = "complaints"
     
