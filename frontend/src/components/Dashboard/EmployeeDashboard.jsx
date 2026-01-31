@@ -225,19 +225,19 @@ const EmployeeDashboard = () => {
           </Button>
         </Paper>
       ) : (
-        <Grid container spacing={4}>
-          {visibleModules.map((mod) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={mod.to}>
-              <DashboardCard
-                title={mod.title}
-                description={mod.description}
-                to={mod.to}
-                icon={mod.icon}
-              />
-            </Grid>
-          ))}
-        </Grid>
         <>
+          <Grid container spacing={4}>
+            {visibleModules.map((mod) => (
+              <Grid item xs={12} sm={6} md={4} lg={3} key={mod.to}>
+                <DashboardCard
+                  title={mod.title}
+                  description={mod.description}
+                  to={mod.to}
+                  icon={mod.icon}
+                />
+              </Grid>
+            ))}
+          </Grid>
           <Box
             sx={{
               display: 'flex',
@@ -275,18 +275,6 @@ const EmployeeDashboard = () => {
               Raise a complaint
             </Button>
           </Box>
-          <Grid container spacing={3}>
-            {visibleModules.map((mod) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={mod.to}>
-                <DashboardCard
-                  title={mod.title}
-                  description={mod.description}
-                  to={mod.to}
-                  icon={mod.icon}
-                />
-              </Grid>
-            ))}
-          </Grid>
         </>
       )}
     </Container>

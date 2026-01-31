@@ -2,6 +2,7 @@ import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import LogoutIcon from '@mui/icons-material/Logout';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -41,10 +42,7 @@ const HRNavbar = () => {
           </Box>
           <Typography variant="h6" component="div" fontWeight={700} sx={{ letterSpacing: '-0.02em', color: 'white' }}>
             WorkHub HR
-            <DashboardIcon sx={{ fontSize: 22, color: 'white' }} />
-          </Box>
-          <Typography variant="h6" component="div" fontWeight={700} sx={{ letterSpacing: '-0.02em' }}>
-            WorkHub
+            <DashboardIcon sx={{ fontSize: 22, color: 'white', ml: 0.5 }} />
           </Typography>
         </Box>
         {user && (
@@ -77,13 +75,6 @@ const HRNavbar = () => {
               </Typography>
               <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)' }}>
                 (HR)
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.5, borderRadius: 1, bgcolor: 'rgba(255,255,255,0.1)' }}>
-              <PersonOutlineIcon sx={{ fontSize: 18, opacity: 0.9 }} />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                {user.name}
-              </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.85 }}>
-                ({user.role})
               </Typography>
             </Box>
             <Button
