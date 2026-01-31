@@ -5,8 +5,10 @@ import {
   TextField,
   IconButton,
   Typography,
-  Fab
+  Fab,
+  Link
 } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import SendIcon from '@mui/icons-material/Send';
 import ChatIcon from '@mui/icons-material/Chat';
 import CloseIcon from '@mui/icons-material/Close';
@@ -40,7 +42,12 @@ const Echo = () => {
 
     try {
       const response = await api.post('/chatbot/echo', { message: input });
-      const botMessage = { text: response.data.response, sender: 'bot' };
+      const botMessage = {
+        text: response.data.response,
+        sender: 'bot',
+        goToPath: response.data.go_to_path ?? null,
+        goToLabel: response.data.go_to_label ?? null,
+      };
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       const errorMessage = {
@@ -155,6 +162,21 @@ const Echo = () => {
                   }}
                 >
                   <Typography variant="body2">{msg.text}</Typography>
+                  {msg.sender === 'bot' && msg.goToPath && msg.goToLabel && (
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      <Link
+                        component={RouterLink}
+                        to={msg.goToPath}
+                        underline="hover"
+                        sx={{
+                          color: msg.sender === 'user' ? 'inherit' : 'primary.main',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Go to {msg.goToLabel}
+                      </Link>
+                    </Typography>
+                  )}
                 </Paper>
               </Box>
             ))}
