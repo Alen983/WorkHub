@@ -153,12 +153,12 @@ const Wellness = () => {
 
       {/* AI Wellness Nudges */}
       {nudges.length > 0 && (
-        <Paper elevation={2} sx={{ p: 2, mb: 3, bgcolor: 'primary.light', color: 'primary.contrastText' }}>
-          <Typography variant="subtitle1" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-            <LightbulbIcon /> For you
+        <Paper elevation={0} sx={{ p: 2, mb: 3, bgcolor: 'rgba(230, 81, 0, 0.06)', borderLeft: 4, borderColor: 'primary.main' }}>
+          <Typography variant="subtitle1" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, color: 'text.primary' }}>
+            <LightbulbIcon sx={{ color: 'primary.main', opacity: 0.9 }} /> For you
           </Typography>
           {nudges.map((n, i) => (
-            <Typography key={i} variant="body2" sx={{ mb: i < nudges.length - 1 ? 1 : 0 }}>
+            <Typography key={i} variant="body2" color="text.secondary" sx={{ mb: i < nudges.length - 1 ? 1 : 0 }}>
               {n.message}
             </Typography>
           ))}
@@ -173,9 +173,11 @@ const Wellness = () => {
           return (
             <Card key={link.name} variant="outlined" sx={{ minWidth: 200, flex: '1 1 200px' }}>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <Icon color="primary" />
-                  <Typography variant="subtitle1" fontWeight="bold">{link.name}</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                  <Box sx={{ width: 36, height: 36, borderRadius: 1.5, bgcolor: 'rgba(230, 81, 0, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon sx={{ fontSize: 20, color: 'primary.main', opacity: 0.9 }} />
+                  </Box>
+                  <Typography variant="subtitle1" fontWeight={600}>{link.name}</Typography>
                 </Box>
                 {link.description && (
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>

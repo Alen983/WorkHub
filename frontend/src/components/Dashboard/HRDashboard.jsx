@@ -30,8 +30,8 @@ import LearningManagement from '../Admin/LearningManagement';
 import api from '../../services/api';
 import { format } from 'date-fns';
 
-const KPICard = ({ title, value, icon: Icon, subtitle, color = 'primary' }) => (
-  <Card elevation={1} sx={{ height: '100%', border: '1px solid', borderColor: 'divider' }}>
+const KPICard = ({ title, value, icon: Icon, subtitle }) => (
+  <Card elevation={0} sx={{ height: '100%', border: '1px solid', borderColor: 'grey.200', transition: 'box-shadow 0.2s ease', '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.06)' } }}>
     <CardContent sx={{ p: 2.5 }}>
       <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
         <Typography variant="body2" color="text.secondary" fontWeight={500}>
@@ -40,21 +40,20 @@ const KPICard = ({ title, value, icon: Icon, subtitle, color = 'primary' }) => (
         {Icon && (
           <Box
             sx={{
-              width: 40,
-              height: 40,
+              width: 36,
+              height: 36,
               borderRadius: 1.5,
-              bgcolor: `${color}.main`,
-              color: 'white',
+              bgcolor: 'rgba(230, 81, 0, 0.12)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <Icon sx={{ fontSize: 22 }} />
+            <Icon sx={{ fontSize: 20, color: 'primary.main', opacity: 0.9 }} />
           </Box>
         )}
       </Box>
-      <Typography variant="h4" fontWeight={700} sx={{ lineHeight: 1.2 }}>
+      <Typography variant="h4" fontWeight={700} sx={{ lineHeight: 1.2, color: 'text.primary' }}>
         {value}
       </Typography>
       {subtitle != null && (
@@ -120,7 +119,6 @@ const HRDashboard = () => {
                 title="Total employees"
                 value={rec.total_employees ?? 0}
                 icon={PeopleIcon}
-                color="primary"
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
@@ -128,7 +126,6 @@ const HRDashboard = () => {
                 title="Pending leave approvals"
                 value={rec.pending_leaves_count ?? pendingLeaves.length}
                 icon={EventBusyIcon}
-                color="warning"
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
@@ -137,7 +134,6 @@ const HRDashboard = () => {
                 value={rec.compliance_due ?? 0}
                 subtitle={rec.compliance_overdue > 0 ? `${rec.compliance_overdue} overdue` : null}
                 icon={AssignmentIcon}
-                color="info"
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
@@ -145,7 +141,6 @@ const HRDashboard = () => {
                 title="Learning completion"
                 value={`${rec.learning_completion_pct ?? 0}%`}
                 icon={SchoolIcon}
-                color="success"
               />
             </Grid>
           </Grid>
@@ -195,23 +190,24 @@ const HRDashboard = () => {
               {aiInsights.length > 0 && (
                 <Grid item xs={12} md={pendingLeaves.length > 0 ? 4 : 12}>
                   <Paper
-                    elevation={1}
+                    elevation={0}
                     sx={{
                       p: 2,
                       border: '1px solid',
-                      borderColor: 'primary.dark',
+                      borderColor: 'divider',
+                      borderLeft: 4,
+                      borderLeftColor: 'rgba(230, 81, 0, 0.35)',
                       borderRadius: 2,
                       height: '100%',
-                      bgcolor: 'primary.main',
-                      color: 'white',
+                      bgcolor: 'rgba(230, 81, 0, 0.06)',
                     }}
                   >
-                    <Typography variant="subtitle1" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                      <LightbulbIcon /> AI insights
+                    <Typography variant="subtitle1" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, color: 'text.primary' }}>
+                      <LightbulbIcon sx={{ color: 'primary.main', opacity: 0.9 }} /> AI insights
                     </Typography>
                     <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
                       {aiInsights.map((msg, i) => (
-                        <Typography key={i} component="li" variant="body2" sx={{ mb: 0.5, opacity: 0.95 }}>
+                        <Typography key={i} component="li" variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                           {msg}
                         </Typography>
                       ))}

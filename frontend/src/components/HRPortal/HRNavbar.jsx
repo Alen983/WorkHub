@@ -15,20 +15,32 @@ const HRNavbar = () => {
   };
 
   return (
-    <AppBar position="sticky" elevation={1} sx={{ bgcolor: 'primary.main' }}>
+    <AppBar
+      position="sticky"
+      elevation={0}
+      sx={{
+        background: 'linear-gradient(90deg, #E65100 0%, #C62828 100%)',
+        borderBottom: '3px solid rgba(255,255,255,0.2)',
+      }}
+    >
       <Toolbar sx={{ minHeight: { xs: 56, sm: 64 }, px: { xs: 2, sm: 3 }, gap: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexGrow: 1 }}>
           <Box
             sx={{
-              width: 36,
-              height: 36,
-              borderRadius: 1,
-              bgcolor: 'rgba(255,255,255,0.15)',
+              width: 40,
+              height: 40,
+              borderRadius: 1.5,
+              bgcolor: 'rgba(255,255,255,0.2)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              border: '1px solid rgba(255,255,255,0.3)',
             }}
           >
+            <AdminPanelSettingsIcon sx={{ fontSize: 24, color: 'white' }} />
+          </Box>
+          <Typography variant="h6" component="div" fontWeight={700} sx={{ letterSpacing: '-0.02em', color: 'white' }}>
+            WorkHub HR
             <DashboardIcon sx={{ fontSize: 22, color: 'white' }} />
           </Box>
           <Typography variant="h6" component="div" fontWeight={700} sx={{ letterSpacing: '-0.02em' }}>
@@ -47,6 +59,24 @@ const HRNavbar = () => {
         )}
         {user && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                px: 1.5,
+                py: 0.5,
+                borderRadius: 1,
+                bgcolor: 'rgba(255,255,255,0.15)',
+                border: '1px solid rgba(255,255,255,0.2)',
+              }}
+            >
+              <PersonOutlineIcon sx={{ fontSize: 18, color: 'white' }} />
+              <Typography variant="body2" sx={{ fontWeight: 600, color: 'white' }}>
+                {user.name}
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                (HR)
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.5, borderRadius: 1, bgcolor: 'rgba(255,255,255,0.1)' }}>
               <PersonOutlineIcon sx={{ fontSize: 18, opacity: 0.9 }} />
               <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -60,7 +90,7 @@ const HRNavbar = () => {
               color="inherit"
               startIcon={<LogoutIcon />}
               onClick={handleLogout}
-              sx={{ textTransform: 'none', fontWeight: 500 }}
+              sx={{ textTransform: 'none', fontWeight: 600, color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.15)' }, transition: 'background-color 0.15s ease' }}
             >
               Logout
             </Button>

@@ -136,22 +136,36 @@ const LeaveList = () => {
           Apply for Leave
         </Button>
       </Box>
-      <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+      <Typography variant="subtitle1" fontWeight={600} sx={{ color: 'text.primary' }} gutterBottom>
         My Leave Requests
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+      <Typography variant="body2" sx={{ color: 'text.secondary', opacity: 0.92, mb: 2 }}>
         Pending requests show a 5-minute countdown; after 5 min they are auto-approved.
       </Typography>
       {leaves.length > 0 ? (
-        <Box sx={{ mt: 2 }}>
+        <Box sx={{ mt: 3 }}>
           {leaves.map((leave) => (
-            <Paper key={leave.id} elevation={2} sx={{ p: 2, mb: 2 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+            <Paper
+              key={leave.id}
+              elevation={0}
+              sx={{
+                p: 2.5,
+                mb: 2,
+                border: '1px solid',
+                borderColor: 'divider',
+                transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
+                '&:hover': {
+                  boxShadow: '0 4px 16px rgba(230, 81, 0, 0.08)',
+                  borderColor: 'rgba(230, 81, 0, 0.2)',
+                },
+              }}
+            >
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1.5 }}>
                 <Box>
-                  <Typography variant="body1">
+                  <Typography variant="body1" sx={{ color: 'text.primary', fontWeight: 500 }}>
                     {format(new Date(leave.from_date), 'MMM dd, yyyy')} - {format(new Date(leave.to_date), 'MMM dd, yyyy')}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" sx={{ color: 'text.secondary', opacity: 0.92 }}>
                     {leave.reason}
                   </Typography>
                 </Box>

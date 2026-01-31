@@ -120,35 +120,57 @@ const EmployeeDashboard = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: 4 }}>
-        <Box>
-          <Typography variant="h4" fontWeight={700} gutterBottom>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 5 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 3, mb: 5 }}>
+        <Box sx={{ flex: '1 1 280px' }}>
+          <Typography variant="h4" fontWeight={700} gutterBottom sx={{ color: 'text.primary', borderBottom: '2px solid', borderColor: 'rgba(230, 81, 0, 0.25)', pb: 0.5, display: 'inline-block' }}>
             Personalized Employee Dashboard
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1, display: 'block' }}>
             Your modules and quick access
           </Typography>
         </Box>
         <Button
-          startIcon={personalizeOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-          endIcon={<SettingsIcon />}
+          startIcon={personalizeOpen ? <ExpandLessIcon sx={{ opacity: 0.9 }} /> : <ExpandMoreIcon sx={{ opacity: 0.9 }} />}
+          endIcon={<SettingsIcon sx={{ opacity: 0.9 }} />}
           variant="outlined"
+          size="medium"
+          color="primary"
           onClick={() => setPersonalizeOpen((o) => !o)}
+          sx={{
+            fontWeight: 600,
+            flexShrink: 0,
+            borderColor: 'rgba(230, 81, 0, 0.4)',
+            color: 'primary.main',
+            opacity: 0.95,
+            '&:hover': { borderColor: 'primary.main', bgcolor: 'rgba(230, 81, 0, 0.06)', opacity: 1 },
+          }}
         >
           Personalize dashboard
         </Button>
       </Box>
 
       <Collapse in={personalizeOpen}>
-        <Paper elevation={1} sx={{ p: 2.5, mb: 3, border: '1px solid', borderColor: 'divider' }}>
-          <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 3,
+            mb: 4,
+            border: '1px solid',
+            borderColor: 'grey.200',
+            borderLeft: '4px solid',
+            borderLeftColor: 'rgba(230, 81, 0, 0.35)',
+            transition: 'box-shadow 0.2s ease',
+            '&:hover': { boxShadow: '0 2px 12px rgba(0,0,0,0.06)' },
+          }}
+        >
+          <Typography variant="subtitle1" fontWeight={600} gutterBottom sx={{ color: 'text.primary' }}>
             Add or remove cards
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          <Typography variant="body2" sx={{ color: 'text.secondary', opacity: 0.92, mb: 2.5 }}>
             Toggle which module cards appear on your dashboard. Changes are saved when you click Save.
           </Typography>
-          <FormGroup row sx={{ flexWrap: 'wrap', gap: 1 }}>
+          <FormGroup row sx={{ flexWrap: 'wrap', gap: 2 }}>
             {MODULES.map((mod) => {
               const key = mod.configKey;
               const field = key === 'leave' ? 'show_leaves' : key === 'complaints' ? 'show_complaints' : `show_${key}`;
@@ -161,29 +183,60 @@ const EmployeeDashboard = () => {
                       checked={checked}
                       onChange={() => handleToggle(key)}
                       size="small"
+                      sx={{ '& .MuiSvgIcon-root': { opacity: 0.9 } }}
                     />
                   }
                   label={mod.title}
+                  sx={{ opacity: 0.95, '&:hover': { opacity: 1 } }}
                 />
               );
             })}
           </FormGroup>
-          <Button variant="contained" onClick={handleSavePreferences} disabled={saving} sx={{ mt: 2 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSavePreferences}
+            disabled={saving}
+            sx={{ mt: 2.5, fontWeight: 600 }}
+          >
             {saving ? 'Saving...' : 'Save preferences'}
           </Button>
         </Paper>
       </Collapse>
 
       {visibleModules.length === 0 ? (
-        <Paper elevation={1} sx={{ p: 4, textAlign: 'center', border: '1px solid', borderColor: 'divider' }}>
-          <Typography color="text.secondary" gutterBottom>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 5,
+            textAlign: 'center',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 2,
+            transition: 'box-shadow 0.2s ease',
+            '&:hover': { boxShadow: '0 4px 20px rgba(0,0,0,0.06)' },
+          }}
+        >
+          <Typography sx={{ color: 'text.secondary', opacity: 0.95 }} gutterBottom>
             No cards visible. Open &quot;Personalize dashboard&quot; and enable at least one card, then Save.
           </Typography>
-          <Button variant="contained" onClick={() => setPersonalizeOpen(true)} sx={{ mt: 2 }}>
+          <Button variant="contained" color="primary" onClick={() => setPersonalizeOpen(true)} sx={{ mt: 2.5, fontWeight: 600 }}>
             Personalize dashboard
           </Button>
         </Paper>
       ) : (
+        <Grid container spacing={4}>
+          {visibleModules.map((mod) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={mod.to}>
+              <DashboardCard
+                title={mod.title}
+                description={mod.description}
+                to={mod.to}
+                icon={mod.icon}
+              />
+            </Grid>
+          ))}
+        </Grid>
         <>
           <Box
             sx={{

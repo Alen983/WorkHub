@@ -97,7 +97,7 @@ const Career = () => {
       >
         {/* Current role card */}
         <Paper
-          elevation={2}
+          elevation={0}
           sx={{
             p: 2,
             minWidth: { xs: '100%', md: 200 },
@@ -106,8 +106,8 @@ const Career = () => {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            border: '2px solid',
-            borderColor: 'primary.main',
+            border: '1px solid',
+            borderColor: 'divider',
             borderRadius: 2,
           }}
         >
@@ -116,15 +116,14 @@ const Career = () => {
               width: 48,
               height: 48,
               borderRadius: '50%',
-              bgcolor: 'primary.main',
-              color: 'primary.contrastText',
+              bgcolor: 'rgba(230, 81, 0, 0.12)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               mb: 1,
             }}
           >
-            <PersonIcon fontSize="medium" />
+            <PersonIcon sx={{ fontSize: 28, color: 'primary.main', opacity: 0.9 }} />
           </Box>
           <Typography variant="subtitle1" fontWeight={600} align="center">
             {current.title}

@@ -103,19 +103,19 @@ const Attendance = () => {
       totals.WFH += s.wfh;
     });
     return [
-      { name: 'Present', value: totals.Present, color: '#a5d6a7' },
-      { name: 'Absent', value: totals.Absent, color: '#ef9a9a' },
-      { name: 'Work from home', value: totals.WFH, color: '#90caf9' },
+      { name: 'Present', value: totals.Present, color: '#81c784' },
+      { name: 'Absent', value: totals.Absent, color: '#e57373' },
+      { name: 'Work from home', value: totals.WFH, color: '#64b5f6' },
     ].filter((d) => d.value > 0);
   }, []);
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <BackToDashboard />
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h5" fontWeight={600} gutterBottom>
         Attendance
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         View your attendance in the calendar. Present, Absent, and Work from Home.
       </Typography>
 
@@ -134,25 +134,32 @@ const Attendance = () => {
         </Select>
       </FormControl>
 
-      <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
+      <Typography variant="subtitle2" fontWeight={600} sx={{ color: 'text.primary', mt: 2 }} gutterBottom>
         Monthly statistics
       </Typography>
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3 }}>
         <Chip
           label={`Present: ${stats.present}`}
-          sx={{ bgcolor: STATUS_COLORS.Present.bg, color: STATUS_COLORS.Present.color }}
+          sx={{ bgcolor: STATUS_COLORS.Present.bg, color: STATUS_COLORS.Present.color, opacity: 0.95, '&:hover': { opacity: 1 } }}
         />
         <Chip
           label={`Absent: ${stats.absent}`}
-          sx={{ bgcolor: STATUS_COLORS.Absent.bg, color: STATUS_COLORS.Absent.color }}
+          sx={{ bgcolor: STATUS_COLORS.Absent.bg, color: STATUS_COLORS.Absent.color, opacity: 0.95, '&:hover': { opacity: 1 } }}
         />
         <Chip
           label={`Work from home: ${stats.wfh}`}
-          sx={{ bgcolor: STATUS_COLORS.WFH.bg, color: STATUS_COLORS.WFH.color }}
+          sx={{ bgcolor: STATUS_COLORS.WFH.bg, color: STATUS_COLORS.WFH.color, opacity: 0.95, '&:hover': { opacity: 1 } }}
         />
       </Box>
 
-      <Paper variant="outlined" sx={{ p: 2 }}>
+      <Paper
+        variant="outlined"
+        sx={{
+          p: 2.5,
+          transition: 'box-shadow 0.2s ease',
+          '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.06)' },
+        }}
+      >
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
           {WEEKDAYS.map((day) => (
             <Box

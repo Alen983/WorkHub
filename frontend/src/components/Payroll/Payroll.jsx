@@ -43,34 +43,41 @@ const Payroll = () => {
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <BackToDashboard />
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h5" fontWeight={600} gutterBottom>
         Payroll & Compensation
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         Trust & financial clarity. View salary, payslips, tax and compliance.
       </Typography>
 
       {/* Salary overview card */}
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+      <Paper
+        sx={{
+          p: 2.5,
+          mb: 3,
+          transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
+          '&:hover': { boxShadow: '0 6px 24px rgba(230, 81, 0, 0.1)' },
+        }}
+      >
+        <Typography variant="subtitle2" sx={{ color: 'text.secondary', opacity: 0.95 }} gutterBottom>
           Salary overview
         </Typography>
         <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
           <Box>
-            <Typography variant="body2" color="text.secondary">Current CTC</Typography>
-            <Typography variant="h6">{formatCTC(SALARY_OVERVIEW.currentCTC)}</Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary', opacity: 0.9 }}>Current CTC</Typography>
+            <Typography variant="h6" sx={{ color: 'text.primary' }}>{formatCTC(SALARY_OVERVIEW.currentCTC)}</Typography>
           </Box>
           <Box>
-            <Typography variant="body2" color="text.secondary">Net monthly salary</Typography>
-            <Typography variant="h6">{formatINR(SALARY_OVERVIEW.netMonthly)}</Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary', opacity: 0.9 }}>Net monthly salary</Typography>
+            <Typography variant="h6" sx={{ color: 'text.primary' }}>{formatINR(SALARY_OVERVIEW.netMonthly)}</Typography>
           </Box>
         </Box>
       </Paper>
 
       {/* Salary structure (expandable) */}
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>Salary structure</Typography>
+      <Accordion sx={{ '&:before': { display: 'none' }, mb: 1 }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ opacity: 0.9 }} />}>
+          <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>Salary structure</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Typography variant="subtitle2" gutterBottom>Earnings</Typography>
@@ -92,8 +99,16 @@ const Payroll = () => {
       </Accordion>
 
       {/* Tax details */}
-      <Paper variant="outlined" sx={{ p: 2, mt: 2 }}>
-        <Typography variant="subtitle1" gutterBottom>Tax details</Typography>
+      <Paper
+        variant="outlined"
+        sx={{
+          p: 2.5,
+          mt: 2,
+          transition: 'box-shadow 0.2s ease',
+          '&:hover': { boxShadow: '0 4px 16px rgba(0,0,0,0.06)' },
+        }}
+      >
+        <Typography variant="subtitle1" fontWeight={600} gutterBottom sx={{ color: 'text.primary' }}>Tax details</Typography>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
           <Box><Typography variant="body2" color="text.secondary">Financial year</Typography><Typography variant="body1">{TAX_DETAILS.financialYear}</Typography></Box>
           <Box><Typography variant="body2" color="text.secondary">Taxable income</Typography><Typography variant="body1">{formatINR(TAX_DETAILS.taxableIncome)}</Typography></Box>

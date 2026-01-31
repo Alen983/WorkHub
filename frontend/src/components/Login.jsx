@@ -45,16 +45,19 @@ const Login = () => {
         }}
       >
         <Paper
-          elevation={1}
+          elevation={0}
           sx={{
             padding: 4,
             width: '100%',
-            border: '1px solid',
-            borderColor: 'divider',
+            border: '2px solid',
+            borderColor: 'rgba(230, 81, 0, 0.2)',
+            borderTop: '4px solid',
+            borderTopColor: 'primary.main',
             borderRadius: 2,
+            boxShadow: '0 8px 32px rgba(230, 81, 0, 0.12)',
           }}
         >
-          <Typography component="h1" variant="h5" align="center" fontWeight={700} gutterBottom>
+          <Typography component="h1" variant="h5" align="center" fontWeight={700} sx={{ color: 'primary.main', opacity: 0.95 }} gutterBottom>
             WorkHub
           </Typography>
           <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>
@@ -94,8 +97,16 @@ const Login = () => {
               type="submit"
               fullWidth
               variant="contained"
+              color="primary"
               size="medium"
-              sx={{ mt: 3, mb: 2, py: 1.5 }}
+              sx={{
+                mt: 3,
+                mb: 2,
+                py: 1.5,
+                fontWeight: 600,
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                '&:hover': { transform: 'translateY(-2px)' },
+              }}
             >
               Sign In
             </Button>
