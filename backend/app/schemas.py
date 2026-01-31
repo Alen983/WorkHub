@@ -272,6 +272,8 @@ class ChatbotRequest(BaseModel):
 
 class ChatbotResponse(BaseModel):
     response: str
+    go_to_path: Optional[str] = None
+    go_to_label: Optional[str] = None
 
 
 class LeaveBalanceResponse(BaseModel):
