@@ -62,13 +62,23 @@ const Echo = () => {
     <>
       {!open && (
         <Fab
-          color="primary"
           aria-label="chat"
           sx={{
             position: 'fixed',
             bottom: 24,
             right: 24,
-            zIndex: 1000
+            zIndex: 1000,
+            bgcolor: 'background.paper',
+            color: 'text.secondary',
+            border: '1px solid',
+            borderColor: 'grey.300',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+            '&:hover': {
+              bgcolor: 'grey.50',
+              color: 'primary.main',
+              borderColor: 'primary.main',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+            },
           }}
           onClick={() => setOpen(true)}
         >
@@ -105,15 +115,14 @@ const Echo = () => {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              bgcolor: 'primary.main',
-              color: 'white'
+              background: 'linear-gradient(90deg, rgba(230,81,0,0.12) 0%, rgba(198,40,40,0.08) 100%)',
             }}
           >
-            <Typography variant="h6">Echo Assistant</Typography>
+            <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 700, opacity: 0.95 }}>Echo Assistant</Typography>
             <IconButton
               size="small"
               onClick={() => setOpen(false)}
-              sx={{ color: 'white' }}
+              sx={{ color: 'text.secondary' }}
             >
               <CloseIcon />
             </IconButton>

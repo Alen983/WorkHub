@@ -12,7 +12,7 @@ const TeamStats = ({ stats }) => {
       label: 'Team Size',
       value: stats.total_team_size || 0,
       icon: <PeopleIcon />,
-      color: '#3B2F53'
+      color: 'grey.800'
     },
     {
       label: 'On Leave',
@@ -39,18 +39,20 @@ const TeamStats = ({ stats }) => {
       {statCards.map((stat, index) => (
         <Grid item xs={12} sm={6} md={3} key={index}>
           <Paper
-            elevation={1}
+            elevation={0}
             sx={{
               p: 2.5,
               display: 'flex',
               alignItems: 'center',
               gap: 2,
               border: '1px solid',
-              borderColor: 'divider',
+              borderColor: 'grey.200',
               borderRadius: 2,
+              transition: 'box-shadow 0.2s ease',
+              '&:hover': { boxShadow: '0 2px 12px rgba(0,0,0,0.06)' },
             }}
           >
-            <Box sx={{ color: stat.color, fontSize: 36, display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ color: stat.color, fontSize: 32, display: 'flex', alignItems: 'center', opacity: 0.9 }}>
               {stat.icon}
             </Box>
             <Box>

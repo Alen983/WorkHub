@@ -280,7 +280,7 @@ const MyProfile = () => {
       </Alert>
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 3 }}>
-        <Avatar sx={{ bgcolor: 'primary.main', width: 80, height: 80 }}>
+        <Avatar sx={{ bgcolor: 'rgba(230, 81, 0, 0.85)', width: 80, height: 80 }}>
           {getInitials(profile.name)}
         </Avatar>
         <Box>

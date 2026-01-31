@@ -63,18 +63,31 @@ const Compliance = () => {
           </Typography>
         </Paper>
       ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, mb: 3 }}>
           {policies.map((policy) => (
-            <Paper key={policy.id} elevation={2} sx={{ p: 2 }}>
-              <Typography variant="subtitle1" fontWeight="medium">
+            <Paper
+              key={policy.id}
+              elevation={0}
+              sx={{
+                p: 2.5,
+                border: '1px solid',
+                borderColor: 'divider',
+                transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
+                '&:hover': {
+                  boxShadow: '0 4px 16px rgba(230, 81, 0, 0.08)',
+                  borderColor: 'rgba(230, 81, 0, 0.2)',
+                },
+              }}
+            >
+              <Typography variant="subtitle1" fontWeight={600} sx={{ color: 'text.primary' }}>
                 {policy.title}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary', opacity: 0.92, mt: 0.5 }}>
                 Due: {format(new Date(policy.due_date), 'MMM dd, yyyy')}
                 {policy.department && ` · ${policy.department}`}
               </Typography>
               {policy.description && (
-                <Typography variant="body2" sx={{ mt: 1 }}>
+                <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary', opacity: 0.92 }}>
                   {policy.description}
                 </Typography>
               )}
@@ -87,7 +100,7 @@ const Compliance = () => {
         Policy rules by category
       </Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-        <FilterListIcon sx={{ color: 'action.active' }} />
+        <FilterListIcon sx={{ color: 'action.active', opacity: 0.9 }} />
         <FormControl size="small" sx={{ minWidth: 240 }} variant="outlined">
           <InputLabel id="compliance-category-label">Filter by category</InputLabel>
           <Select
@@ -114,13 +127,15 @@ const Compliance = () => {
           return (
             <Paper
               key={cat.id}
-              elevation={1}
+              elevation={0}
               sx={{
                 p: 2.5,
                 mb: 3,
                 border: '1px solid',
                 borderColor: 'divider',
                 borderRadius: 2,
+                transition: 'box-shadow 0.2s ease',
+                '&:hover': { boxShadow: '0 4px 20px rgba(0,0,0,0.06)' },
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
@@ -129,14 +144,13 @@ const Compliance = () => {
                     width: 44,
                     height: 44,
                     borderRadius: 1.5,
-                    bgcolor: 'primary.main',
-                    color: 'white',
+                    bgcolor: 'rgba(230, 81, 0, 0.12)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
                 >
-                  <Icon sx={{ fontSize: 24 }} />
+                  <Icon sx={{ fontSize: 24, color: 'primary.main', opacity: 0.9 }} />
                 </Box>
                 <Typography variant="h6" fontWeight={600}>
                   {cat.title} ({cat.ruleCount} Rules)
