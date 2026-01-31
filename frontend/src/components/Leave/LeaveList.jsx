@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Container, Typography, Box, Chip, Paper, Button, IconButton } from '@mui/material';
+import { Container, Typography, Box, Chip, Paper, Button, IconButton, Grid, LinearProgress, Skeleton } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
@@ -82,10 +82,13 @@ function PendingLeaveTimer({ createdAt, onExpired }) {
 
 const LeaveList = () => {
   const [leaves, setLeaves] = useState([]);
+  const [balance, setBalance] = useState(null);
+  const [loadingBalance, setLoadingBalance] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     loadLeaves();
+    loadBalance();
   }, []);
 
   const loadLeaves = async () => {
@@ -97,11 +100,24 @@ const LeaveList = () => {
     }
   };
 
+  const loadBalance = async () => {
+    try {
+      setLoadingBalance(true);
+      const response = await api.get('/leave/my/balance');
+      setBalance(response.data);
+    } catch (error) {
+      console.error('Failed to load balance:', error);
+    } finally {
+      setLoadingBalance(false);
+    }
+  };
+
   const handleDelete = async (leaveId) => {
     if (!window.confirm('Cancel this leave request? This cannot be undone.')) return;
     try {
       await api.delete(`/leave/my/${leaveId}`);
       loadLeaves();
+      loadBalance(); // Reload balance after deleting leave
     } catch (err) {
       console.error('Failed to delete leave:', err);
       alert(err.response?.data?.detail || 'Failed to delete leave');
@@ -136,6 +152,94 @@ const LeaveList = () => {
           Apply for Leave
         </Button>
       </Box>
+      
+      {/* Leave Balance Card */}
+      {loadingBalance ? (
+        <Paper elevation={0} sx={{ p: 3, mb: 3, border: '1px solid', borderColor: 'divider' }}>
+          <Skeleton variant="text" width="40%" height={32} sx={{ mb: 2 }} />
+          <Grid container spacing={3}>
+            <Grid item xs={4}>
+              <Skeleton variant="text" height={24} />
+              <Skeleton variant="text" width="60%" height={32} />
+            </Grid>
+            <Grid item xs={4}>
+              <Skeleton variant="text" height={24} />
+              <Skeleton variant="text" width="60%" height={32} />
+            </Grid>
+            <Grid item xs={4}>
+              <Skeleton variant="text" height={24} />
+              <Skeleton variant="text" width="60%" height={32} />
+            </Grid>
+          </Grid>
+        </Paper>
+      ) : balance ? (
+        <Paper 
+          elevation={0} 
+          sx={{ 
+            p: 3, 
+            mb: 3, 
+            border: '1px solid', 
+            borderColor: 'divider',
+            background: balance.remaining_leaves < 5 
+              ? 'linear-gradient(135deg, rgba(198, 40, 40, 0.05) 0%, rgba(230, 81, 0, 0.05) 100%)'
+              : 'linear-gradient(135deg, rgba(230, 81, 0, 0.03) 0%, rgba(255, 255, 255, 1) 100%)',
+          }}
+        >
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+            My Leave Balance
+          </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={4}>
+              <Box>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  Total Leaves
+                </Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                  {balance.total_leaves}
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Box>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  Used Leaves
+                </Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                  {balance.used_leaves}
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Box>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  Remaining Leaves
+                </Typography>
+                <Typography 
+                  variant="h5" 
+                  sx={{ 
+                    fontWeight: 700,
+                    color: balance.remaining_leaves < 5 ? 'error.main' : 'success.main'
+                  }}
+                >
+                  {balance.remaining_leaves}
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
+          <Box sx={{ mt: 2 }}>
+            <LinearProgress
+              variant="determinate"
+              value={(balance.used_leaves / balance.total_leaves) * 100}
+              color={
+                (balance.used_leaves / balance.total_leaves) * 100 > 80 ? 'error' :
+                (balance.used_leaves / balance.total_leaves) * 100 > 60 ? 'warning' : 'primary'
+              }
+              sx={{ height: 8, borderRadius: 1 }}
+            />
+          </Box>
+        </Paper>
+      ) : null}
+      
       <Typography variant="subtitle1" fontWeight={600} sx={{ color: 'text.primary' }} gutterBottom>
         My Leave Requests
       </Typography>

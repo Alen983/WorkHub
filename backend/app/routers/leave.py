@@ -150,6 +150,39 @@ def get_my_leaves(
     return [leave_to_response(l) for l in leaves]
 
 
+@router.get("/my/balance", response_model=LeaveBalanceResponse)
+def get_my_leave_balance(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get current user's leave balance for the current year."""
+    current_year = datetime.now().year
+    balance = db.query(LeaveBalance).filter(
+        LeaveBalance.user_id == current_user.id,
+        LeaveBalance.year == current_year
+    ).first()
+    
+    if balance:
+        return LeaveBalanceResponse(
+            user_id=current_user.id,
+            user_name=current_user.name,
+            total_leaves=balance.total_leaves,
+            used_leaves=balance.used_leaves,
+            remaining_leaves=balance.remaining_leaves,
+            year=balance.year
+        )
+    else:
+        # Default to 20 days if no balance record exists
+        return LeaveBalanceResponse(
+            user_id=current_user.id,
+            user_name=current_user.name,
+            total_leaves=20,
+            used_leaves=0,
+            remaining_leaves=20,
+            year=current_year
+        )
+
+
 @router.get("/pending", response_model=list[LeaveRequestResponse])
 def get_pending_leaves(
     current_user: User = Depends(require_role("manager")),
