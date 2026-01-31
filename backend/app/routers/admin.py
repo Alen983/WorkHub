@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from app.database import get_db
-from app.models import User, CompliancePolicy, ComplianceCategoryRule, LearningContent, DashboardConfig, Complaint
+from app.models import User, CompliancePolicy, ComplianceCategoryRule, LearningContent, DashboardConfig, Complaint, Payroll
 from app.schemas import (
     UserCreate, UserResponse,
     CompliancePolicyCreate, CompliancePolicyResponse,
@@ -10,10 +10,12 @@ from app.schemas import (
     ComplianceCategoryRulesByCategory,
     ComplaintWithEmployeeResponse,
     ComplaintStatusUpdate,
-    LearningContentCreate, LearningContentResponse
+    LearningContentCreate, LearningContentResponse,
+    PayrollCreate, PayrollUpdate, PayrollResponse
 )
 from app.dependencies import require_role
 from app.auth import get_password_hash
+from datetime import datetime
 import json
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -251,3 +253,86 @@ def create_learning_content(
     db.refresh(new_content)
     new_content.tags = content_data.tags
     return new_content
+
+
+@router.get("/payroll/{user_id}", response_model=PayrollResponse)
+def get_payroll(
+    user_id: int,
+    current_user: User = Depends(require_role("hr")),
+    db: Session = Depends(get_db)
+):
+    payroll = db.query(Payroll).filter(Payroll.user_id == user_id).first()
+    if not payroll:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Payroll not found for this user"
+        )
+    return payroll
+
+
+@router.post("/payroll", response_model=PayrollResponse)
+def create_payroll(
+    payroll_data: PayrollCreate,
+    current_user: User = Depends(require_role("hr")),
+    db: Session = Depends(get_db)
+):
+    # Check if user exists
+    user = db.query(User).filter(User.id == payroll_data.user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    # Check if payroll already exists
+    existing_payroll = db.query(Payroll).filter(Payroll.user_id == payroll_data.user_id).first()
+    if existing_payroll:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Payroll already exists for this user. Use PATCH to update."
+        )
+    
+    new_payroll = Payroll(
+        user_id=payroll_data.user_id,
+        current_ctc=payroll_data.current_ctc,
+        net_monthly=payroll_data.net_monthly,
+        basic=payroll_data.basic,
+        hra=payroll_data.hra,
+        special_allowance=payroll_data.special_allowance,
+        other_allowances=payroll_data.other_allowances,
+        pf=payroll_data.pf,
+        tds=payroll_data.tds,
+        other_deductions=payroll_data.other_deductions,
+        financial_year=payroll_data.financial_year,
+        tax_regime=payroll_data.tax_regime,
+        updated_at=datetime.utcnow()
+    )
+    db.add(new_payroll)
+    db.commit()
+    db.refresh(new_payroll)
+    return new_payroll
+
+
+@router.patch("/payroll/{user_id}", response_model=PayrollResponse)
+def update_payroll(
+    user_id: int,
+    payroll_data: PayrollUpdate,
+    current_user: User = Depends(require_role("hr")),
+    db: Session = Depends(get_db)
+):
+    payroll = db.query(Payroll).filter(Payroll.user_id == user_id).first()
+    if not payroll:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Payroll not found for this user"
+        )
+    
+    # Update only provided fields
+    update_data = payroll_data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(payroll, field, value)
+    
+    payroll.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(payroll)
+    return payroll

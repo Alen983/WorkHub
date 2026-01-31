@@ -50,6 +50,36 @@ with engine.connect() as conn:
             conn.commit()
         except Exception:
             conn.rollback()
+    
+    # Check if payroll table exists, create if not
+    try:
+        r = conn.execute(__import__("sqlalchemy").text("SELECT name FROM sqlite_master WHERE type='table' AND name='payroll'"))
+        table_exists = r.fetchone() is not None
+        if not table_exists:
+            conn.execute(__import__("sqlalchemy").text("""
+                CREATE TABLE payroll (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL UNIQUE,
+                    current_ctc INTEGER NOT NULL,
+                    net_monthly INTEGER NOT NULL,
+                    basic INTEGER NOT NULL,
+                    hra INTEGER NOT NULL,
+                    special_allowance INTEGER NOT NULL,
+                    other_allowances INTEGER DEFAULT 0,
+                    pf INTEGER NOT NULL,
+                    tds INTEGER NOT NULL,
+                    other_deductions INTEGER DEFAULT 0,
+                    financial_year TEXT NOT NULL,
+                    tax_regime TEXT DEFAULT 'Old regime',
+                    updated_at TEXT,
+                    FOREIGN KEY (user_id) REFERENCES users(id)
+                )
+            """))
+            conn.commit()
+            print("✓ Created payroll table")
+    except Exception as e:
+        print(f"Note: Could not create payroll table: {e}")
+        conn.rollback()
 
 db = SessionLocal()
 

@@ -412,3 +412,52 @@ class CertificationAlert(BaseModel):
 class ComplianceReminder(BaseModel):
     message: str
     type: str  # acknowledgement, certification, due_task
+
+
+class PayrollCreate(BaseModel):
+    user_id: int
+    current_ctc: int
+    net_monthly: int
+    basic: int
+    hra: int
+    special_allowance: int
+    other_allowances: int = 0
+    pf: int
+    tds: int
+    other_deductions: int = 0
+    financial_year: str
+    tax_regime: str = "Old regime"
+
+
+class PayrollUpdate(BaseModel):
+    current_ctc: Optional[int] = None
+    net_monthly: Optional[int] = None
+    basic: Optional[int] = None
+    hra: Optional[int] = None
+    special_allowance: Optional[int] = None
+    other_allowances: Optional[int] = None
+    pf: Optional[int] = None
+    tds: Optional[int] = None
+    other_deductions: Optional[int] = None
+    financial_year: Optional[str] = None
+    tax_regime: Optional[str] = None
+
+
+class PayrollResponse(BaseModel):
+    id: int
+    user_id: int
+    current_ctc: int
+    net_monthly: int
+    basic: int
+    hra: int
+    special_allowance: int
+    other_allowances: int
+    pf: int
+    tds: int
+    other_deductions: int
+    financial_year: str
+    tax_regime: str
+    updated_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
