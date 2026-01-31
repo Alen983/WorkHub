@@ -21,6 +21,7 @@ import ProtectedRoute from './components/common/ProtectedRoute';
 import Echo from './components/Chatbot/Echo';
 import HRNavbar from './components/HRPortal/HRNavbar';
 import HRProtectedRoute from './components/HRPortal/HRProtectedRoute';
+import LandingPage from './components/LandingPage';
 
 const theme = createTheme({
   palette: {
@@ -196,6 +197,7 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/hr/login" element={<Navigate to="/login" replace />} />
             <Route
@@ -317,7 +319,6 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/hr/*" element={<Navigate to="/hr" replace />} />
           </Routes>
         </Router>

@@ -9,6 +9,7 @@ import {
   Box,
   Alert
 } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
@@ -101,7 +102,7 @@ const Login = () => {
               size="medium"
               sx={{
                 mt: 3,
-                mb: 2,
+                mb: 1.5,
                 py: 1.5,
                 fontWeight: 600,
                 transition: 'transform 0.2s ease, box-shadow 0.2s ease',
@@ -109,6 +110,22 @@ const Login = () => {
               }}
             >
               Sign In
+            </Button>
+            <Button
+              fullWidth
+              variant="text"
+              color="inherit"
+              size="medium"
+              startIcon={<ArrowBackIcon />}
+              onClick={() => navigate('/')}
+              sx={{
+                py: 1,
+                fontWeight: 500,
+                color: 'text.secondary',
+                '&:hover': { color: 'primary.main', backgroundColor: 'rgba(230, 81, 0, 0.06)' },
+              }}
+            >
+              Go back
             </Button>
           </Box>
         </Paper>
