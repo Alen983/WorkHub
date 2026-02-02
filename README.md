@@ -1,6 +1,9 @@
 # Employee Self-Service Portal
 
 A full-stack employee self-service portal with role-based access control, leave management, AI recommendations, and chatbot functionality.
+WorkHub is an open‑source Employee Self‑Service Portal built as a hackathon project to explore how modern web stacks and AI features can simplify everyday HR workflows.
+
+The goal of this project is not perfection — it’s learning, collaboration, and experimentation. If you’re a developer who enjoys full‑stack systems, dashboards, or AI integrations, you’re very welcome here.
 
 
 ## Features
@@ -154,3 +157,20 @@ python seed_data.py
 - If ports 3000 or 8000 are already in use, modify the port mappings in `docker-compose.yml`
 - To reset the database, remove the Docker volume: `docker-compose down -v`
 - Check container logs: `docker-compose logs backend` or `docker-compose logs frontend`
+
+## Contributing
+WorkHub is open to contributors of all levels.
+You can help by:
+- Improving UI/UX
+- Fixing bugs
+- Adding new features
+- Improving documentation
+- Refactoring code
+Please read CONTRIBUTING.md before opening a pull request.
+
+## License
+This project is licensed under the MIT License.
+
+## Acknowledgements
+Built during a hackathon with curiosity, caffeine, and a lot of Docker rebuilds.
+- If this project helps you learn something,that’s a win already ⭐
