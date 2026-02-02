@@ -1,5 +1,9 @@
 # Employee Self-Service Portal
 
+<p align="center">
+  <img width="500" height="350" src="hero.jpg">
+</p>    
+
 A full-stack employee self-service portal with role-based access control, leave management, AI recommendations, and chatbot functionality.
 WorkHub is an open‑source Employee Self‑Service Portal built as a hackathon project to explore how modern web stacks and AI features can simplify everyday HR workflows.
 
