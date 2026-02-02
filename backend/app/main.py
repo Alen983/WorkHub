@@ -31,3 +31,12 @@ app.include_router(complaints.router)
 @app.get("/")
 def root():
     return {"message": "Employee Self-Service Portal API"}
+
+
+@app.get("/health")
+def health():
+    """Health check endpoint for monitoring and deployment checks."""
+    return {
+        "status": "healthy",
+        "service": "Employee Self-Service Portal API"
+    }
