@@ -122,7 +122,7 @@ const LeaveList = () => {
       loadLeaves();
       loadBalance(); // Reload balance after deleting leave
     } catch (err) {
-      alert(err.response?.data?.detail || 'Failed to delete leave');
+      setError(err.response?.data?.detail || 'Failed to cancel leave request. Please try again.');
     }
   };
 
