@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Container, Typography, Box, Chip, Paper, Button, IconButton, Grid, LinearProgress, Skeleton } from '@mui/material';
+import { Container, Typography, Box, Chip, Paper, Button, IconButton, Grid, LinearProgress, Skeleton, Alert } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
@@ -83,6 +83,7 @@ function PendingLeaveTimer({ createdAt, onExpired }) {
 const LeaveList = () => {
   const [leaves, setLeaves] = useState([]);
   const [balance, setBalance] = useState(null);
+  const [error, setError] = useState('');
   const [loadingBalance, setLoadingBalance] = useState(true);
   const navigate = useNavigate();
 
@@ -91,26 +92,28 @@ const LeaveList = () => {
     loadBalance();
   }, []);
 
-  const loadLeaves = async () => {
-    try {
-      const response = await api.get('/leave/my');
-      setLeaves(response.data);
-    } catch (error) {
-      console.error('Failed to load leaves:', error);
-    }
-  };
+   const loadLeaves = async () => {
+      try {
+        const response = await api.get('/leave/my');
+        setLeaves(response.data);
+        setError(''); // Clear any previous errors
+      } catch (error) {
+        setError('Failed to load your leave requests. Please try again.');
+      }
+   };
 
-  const loadBalance = async () => {
-    try {
-      setLoadingBalance(true);
-      const response = await api.get('/leave/my/balance');
-      setBalance(response.data);
-    } catch (error) {
-      console.error('Failed to load balance:', error);
-    } finally {
-      setLoadingBalance(false);
-    }
-  };
+   const loadBalance = async () => {
+     try {
+       setLoadingBalance(true);
+       const response = await api.get('/leave/my/balance');
+       setBalance(response.data);
+       setError(''); // Clear any previous errors
+     } catch (error) {
+       setError('Failed to load your leave balance. Please refresh the page.');
+     } finally {
+       setLoadingBalance(false);
+     }
+   };
 
   const handleDelete = async (leaveId) => {
     if (!window.confirm('Cancel this leave request? This cannot be undone.')) return;
@@ -119,8 +122,7 @@ const LeaveList = () => {
       loadLeaves();
       loadBalance(); // Reload balance after deleting leave
     } catch (err) {
-      console.error('Failed to delete leave:', err);
-      alert(err.response?.data?.detail || 'Failed to delete leave');
+      setError(err.response?.data?.detail || 'Failed to cancel leave request. Please try again.');
     }
   };
 
@@ -144,6 +146,11 @@ const LeaveList = () => {
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <BackToDashboard />
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
+          {error}
+        </Alert>
+    )}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h5">
           Leave Management
