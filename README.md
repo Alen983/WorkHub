@@ -52,6 +52,17 @@ This will:
    - Backend API: http://localhost:8000
    - API Documentation: http://localhost:8000/docs
 
+### Setup Environment Variables
+
+Before running the backend, create your `.env` file from the example:
+
+```bash
+# On Linux / Mac
+cp backend/.env.example backend/.env
+
+# On Windows PowerShell
+Copy-Item backend\.env.example backend\.env
+
 ### Demo Credentials
 
 The database is seeded with the following test users:
