@@ -186,6 +186,16 @@ You can help by:
 - Refactoring code
 Please read CONTRIBUTING.md before opening a pull request.
 
+## Contributors ✨
+
+Thanks to these wonderful people who have contributed to this project:
+
+<a href="https://github.com/Alen983/WorkHub/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Alen983/WorkHub" />
+</a>
+
+Contributions of any kind are welcome!
+
 ## License
 This project is licensed under the MIT License.
 
