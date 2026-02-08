@@ -82,6 +82,8 @@ The database is seeded with the following test users:
 ## Project Structure
 
 ```
+
+```
 WorkHub/
 ├── backend/
 │   ├── app/
