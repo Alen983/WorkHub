@@ -78,10 +78,11 @@ The database is seeded with the following test users:
 **HR Admin:**
 - Email: `hr@company.com`
 - Password: `password123`
+```
 
 ## Project Structure
 
-```
+
 
 ```
 WorkHub/
